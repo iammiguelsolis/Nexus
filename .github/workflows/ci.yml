@@ -28,6 +28,7 @@ jobs:
         working-directory: ./backend
         run: |
           npm ci
+          psql "$DATABASE_URL" -f src/db/migrations/001_init.sql
           npm run test
         env:
           DATABASE_URL: postgresql://nexus_user:nexus_pass@localhost:5432/nexus_test

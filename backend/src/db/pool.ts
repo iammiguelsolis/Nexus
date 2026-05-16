@@ -3,12 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const isLocalDB = process.env.DATABASE_URL?.includes('localhost');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
-  ssl: { rejectUnauthorized: false },
+  ssl: isLocalDB ? false : { rejectUnauthorized: false },
 });
 
 pool.on('error', (err: Error) => {

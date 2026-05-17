@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+  { path: '/profile', label: 'Mi Perfil', icon: '👤' },
   { path: '/sessions', label: 'Sesiones', icon: '🎯' },
   { path: '/vacancies', label: 'Vacantes', icon: '💼' },
 ];

@@ -105,11 +105,82 @@
 
 ## 👤 Perfil
 
-| ID | Caso de Uso | Estado |
-|----|-------------|--------|
-| UC-04 | Completar perfil y habilidades | ⏳ Pendiente |
-| UC-05 | Actualizar perfil profesional | ⏳ Pendiente |
-| UC-06 | Ver perfil de otro usuario | ⏳ Pendiente |
+### ✅ UC-04 — Completar perfil y habilidades
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Padawan registra sus habilidades, nivel de dominio, estudios y objetivos de carrera. |
+| **Actores** | 🧑‍🎓 Padawan |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/ProfilePage.tsx` | Formulario de perfil con gestión de habilidades |
+| Backend | `backend/src/controllers/profile.controller.ts` | `listSkills()`, `addSkill()`, `removeSkill()` |
+| Backend | `backend/src/routes/profile.routes.ts` | `GET/POST/DELETE /api/v1/profile/skills` |
+| Backend | `backend/src/schemas/profile.schema.ts` | Validación con Zod |
+
+**Flujo:**
+1. Padawan navega a "Mi Perfil" en la barra lateral
+2. Ve sus habilidades actuales con nivel de dominio (Básico, Intermedio, Avanzado)
+3. Hace clic en "+ Agregar" → modal con catálogo de habilidades
+4. Selecciona habilidad y nivel → `POST /api/v1/profile/skills`
+5. Puede eliminar habilidades con el botón ✕
+
+---
+
+### ✅ UC-05 — Actualizar perfil profesional
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | Editar datos personales, bio, preferencias y portafolio. |
+| **Actores** | 🧑‍🎓 Padawan · 🧙‍♂️ Mentor Jedi |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/ProfilePage.tsx` | Formulario adaptado según rol |
+| Backend | `backend/src/controllers/profile.controller.ts` | `getMyProfile()`, `updateMyProfile()` |
+| Backend | `backend/src/routes/profile.routes.ts` | `GET/PUT /api/v1/profile/me` |
+
+**Flujo:**
+1. Usuario navega a "Mi Perfil"
+2. Edita nombres, apellidos y campos según su rol:
+   - **Padawan**: bio, URL de portafolio
+   - **Jedi**: especialidades, años de experiencia, bio profesional
+3. Hace clic en "Guardar cambios" → `PUT /api/v1/profile/me`
+4. Backend actualiza tablas `usuario` + `perfil_aprendiz` o `mentor` en transacción
+
+---
+
+### ✅ UC-06 — Ver perfil de otro usuario
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | Consultar el perfil público de un aprendiz o mentor. |
+| **Actores** | 🧙‍♂️ Mentor Jedi · 🏢 Empresa |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/UserProfilePage.tsx` | Vista de perfil público |
+| Backend | `backend/src/controllers/profile.controller.ts` | `getUserProfile()` |
+| Backend | `backend/src/routes/profile.routes.ts` | `GET /api/v1/profile/user/:userId` |
+
+**Flujo:**
+1. Usuario accede a `/profile/:userId`
+2. Frontend llama `GET /api/v1/profile/user/:userId`
+3. Backend devuelve datos públicos (sin email) + habilidades si es Padawan
+4. Se muestra tarjeta con avatar, rol, bio, score y habilidades
 
 ## 🚀 Onboarding
 
@@ -183,10 +254,10 @@
 | Métrica | Valor |
 |---------|-------|
 | **Total Casos de Uso** | 26 |
-| **Implementados** | 3 (UC-01, UC-02, UC-03) |
+| **Implementados** | 6 (UC-01, UC-02, UC-03, UC-04, UC-05, UC-06) |
 | **En progreso** | 0 |
-| **Pendientes** | 23 |
-| **Avance** | 11.5% |
+| **Pendientes** | 20 |
+| **Avance** | 23% |
 
 ---
 

@@ -83,6 +83,24 @@ export interface Vacancy {
   empresa_descripcion?: string;
 }
 
+// Profile & Skill Types
+export type NivelHabilidad = 'Basico' | 'Intermedio' | 'Avanzado';
+export type CategoriaHabilidad = 'Tecnica' | 'Blanda' | 'Certificacion';
+
+export interface Skill {
+  habilidad_id: string;
+  nombre: string;
+  categoria: CategoriaHabilidad;
+  descripcion?: string;
+  ph_id?: string;
+  nivel?: NivelHabilidad;
+  fecha_adquisicion?: string;
+}
+
+export interface ProfileData extends User {
+  habilidades: Skill[];
+}
+
 // API Response
 export interface ApiResponse<T> {
   success: boolean;

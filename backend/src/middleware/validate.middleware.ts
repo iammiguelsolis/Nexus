@@ -16,13 +16,15 @@ export const validate = (schema: ZodSchema, target: ValidationTarget = 'body') =
       next();
     } catch (err) {
       if (err instanceof ZodError) {
+        const details = err.errors.map((e) => ({
+          campo: e.path.join('.'),
+          mensaje: e.message,
+        }));
+        console.error(`[Validation Error] on ${req.method} ${req.originalUrl}:`, details);
         res.status(400).json({
           error: 'Error de validación',
           code: 'VALIDATION_ERROR',
-          details: err.errors.map((e) => ({
-            campo: e.path.join('.'),
-            mensaje: e.message,
-          })),
+          details,
         });
         return;
       }

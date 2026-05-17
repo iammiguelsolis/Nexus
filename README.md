@@ -39,7 +39,7 @@ cd nexus
 docker-compose up --build
 
 # 3. ¡Listo! La app está corriendo:
-#    Frontend → http://localhost:5173
+#    Frontend → http://localhost:5174
 #    Backend  → http://localhost:3001
 #    Postgres → localhost:5432
 
@@ -49,7 +49,7 @@ curl -X POST http://localhost:3001/api/v1/auth/register \
   -d '{"nombres":"Carlos","apellidos":"García","email":"carlos@test.com","contrasena":"Test1234!","rol":"Padawan"}'
 
 # 5. Abrir el frontend y hacer login
-open http://localhost:5173
+open http://localhost:5174
 ```
 
 ---

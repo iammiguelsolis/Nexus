@@ -16,12 +16,12 @@ export const addSkillSchema = z.object({
 export const updateProfileSchema = z.object({
   nombres: z.string().min(2).max(100).optional(),
   apellidos: z.string().min(2).max(100).optional(),
-  resumen_bio: z.string().max(1000).optional().nullable(),
-  url_portafolio: z.string().url('URL inválida').max(255).optional().nullable(),
+  resumen_bio: z.string().max(1000).optional().nullable().or(z.literal('')),
+  url_portafolio: z.union([z.string().url('URL inválida'), z.literal('')]).optional().nullable(),
   // Campos exclusivos de Mentor
-  especialidades: z.string().max(500).optional().nullable(),
+  especialidades: z.string().max(500).optional().nullable().or(z.literal('')),
   anios_experiencia: z.number().int().min(0).max(50).optional(),
-  bio_profesional: z.string().max(2000).optional().nullable(),
+  bio_profesional: z.string().max(2000).optional().nullable().or(z.literal('')),
 });
 
 export type AddSkillInput = z.infer<typeof addSkillSchema>;

@@ -67,7 +67,7 @@ const DashboardPage = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Score', value: data?.score_empleabilidad?.toFixed(0) || '0', icon: '⭐', desc: 'Empleabilidad' },
+          { label: 'Score', value: Number(data?.score_empleabilidad || 0).toFixed(0), icon: '⭐', desc: 'Empleabilidad' },
           { label: 'OKRs', value: String(data?.stats.okrs_completados || 0), icon: '✅', desc: 'Completados' },
           { label: 'Sesiones', value: String(data?.stats.sesiones_realizadas || 0), icon: '🎯', desc: 'Realizadas' },
           { label: 'Habilidades', value: String(data?.stats.total_habilidades || 0), icon: '💡', desc: 'Registradas' },

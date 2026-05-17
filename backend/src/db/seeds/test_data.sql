@@ -17,7 +17,7 @@ VALUES (
   'a1b2c3d4-e5f6-7890-abcd-000000000001',
   'María', 'García',
   'maria.padawan@test.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2a$10$ibApptG6TU6VhmkmwlSeSuIiVeGNUoxOl582CI8YbuYioe3.9PwE.',
   'Padawan'
 ) ON CONFLICT (email) DO NOTHING;
 
@@ -27,7 +27,7 @@ VALUES (
   'a1b2c3d4-e5f6-7890-abcd-000000000002',
   'Carlos', 'López',
   'carlos.padawan@test.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2a$10$ibApptG6TU6VhmkmwlSeSuIiVeGNUoxOl582CI8YbuYioe3.9PwE.',
   'Padawan'
 ) ON CONFLICT (email) DO NOTHING;
 
@@ -37,7 +37,7 @@ VALUES (
   'a1b2c3d4-e5f6-7890-abcd-000000000003',
   'Ana', 'Torres',
   'ana.jedi@test.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2a$10$ibApptG6TU6VhmkmwlSeSuIiVeGNUoxOl582CI8YbuYioe3.9PwE.',
   'Jedi'
 ) ON CONFLICT (email) DO NOTHING;
 
@@ -47,7 +47,7 @@ VALUES (
   'a1b2c3d4-e5f6-7890-abcd-000000000004',
   'Roberto', 'Díaz',
   'roberto.jedi@test.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2a$10$ibApptG6TU6VhmkmwlSeSuIiVeGNUoxOl582CI8YbuYioe3.9PwE.',
   'Jedi'
 ) ON CONFLICT (email) DO NOTHING;
 
@@ -57,7 +57,7 @@ VALUES (
   'a1b2c3d4-e5f6-7890-abcd-000000000005',
   'Laura', 'Admin',
   'admin@test.com',
-  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+  '$2a$10$ibApptG6TU6VhmkmwlSeSuIiVeGNUoxOl582CI8YbuYioe3.9PwE.',
   'Admin'
 ) ON CONFLICT (email) DO NOTHING;
 

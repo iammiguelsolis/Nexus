@@ -233,7 +233,7 @@ const OKRPage = () => {
                 <div className="flex items-center gap-2 pt-2" style={{ borderTop: '1px solid var(--border-light)' }}>
                   {/* UC-17: Padawan actualiza progreso */}
                   {isPadawan && ['Pendiente', 'EnProgreso'].includes(okr.estado) && (
-                    <button onClick={() => { setProgressOkr(okr); setNewValue(okr.valor_actual); setShowProgress(true); }}
+                    <button onClick={() => { setProgressOkr(okr); setNewValue(Number(okr.valor_actual)); setShowProgress(true); }}
                             className="text-xs font-medium" style={{ color: 'var(--color-primary-500)' }}>
                       📊 Actualizar progreso
                     </button>
@@ -241,7 +241,7 @@ const OKRPage = () => {
 
                   {/* UC-18: Padawan completa OKR */}
                   {isPadawan && okr.estado === 'EnProgreso' && (
-                    <button onClick={() => { setCompleteOkr(okr); setCompleteValue(okr.valor_meta); setShowComplete(true); }}
+                    <button onClick={() => { setCompleteOkr(okr); setCompleteValue(Number(okr.valor_meta)); setShowComplete(true); }}
                             className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
                       ✓ Completar
                     </button>
@@ -316,7 +316,7 @@ const OKRPage = () => {
             <input className="input-field" type="number" min={0} max={progressOkr?.valor_meta}
                    value={newValue} onChange={(e) => setNewValue(Number(e.target.value))} />
           </div>
-          <button onClick={handleUpdateProgress} disabled={updating}
+          <button onClick={handleUpdateProgress} disabled={updating || newValue === Number(progressOkr?.valor_actual)}
                   className="btn-primary w-full flex items-center justify-center gap-2">
             {updating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
             {updating ? 'Guardando...' : 'Actualizar progreso'}

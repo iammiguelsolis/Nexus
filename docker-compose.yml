@@ -7,9 +7,17 @@ services:
       POSTGRES_USER: nexus_user
       POSTGRES_PASSWORD: nexus_local_pass
       POSTGRES_DB: nexus_db
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
+    command: >
+      postgres
+      -c password_encryption=md5
+      -c log_connections=on
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/db/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql
+      - ./backend/src/db/migrations/003_notifications.sql:/docker-entrypoint-initdb.d/003_notifications.sql
+      - ./backend/src/db/seeds/test_data.sql:/docker-entrypoint-initdb.d/010_test_data.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U nexus_user -d nexus_db"]
       interval: 5s

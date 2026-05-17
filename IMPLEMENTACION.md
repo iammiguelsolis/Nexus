@@ -320,34 +320,7 @@
 
 | Campo | Detalle |
 |-------|--------|
-| **Descripción** | Agendar una nueva sesión con fecha, hora y duración. |
-| **Actores** | 🧑‍🎓 Padawan · 🧙‍♂️ Mentor Jedi |
-| **Estado** | ✅ Implementado |
-| **Fecha** | 2026-05-17 |
-
-**Archivos clave:**
-
-| Capa | Archivo | Responsabilidad |
-|------|---------|----------------|
-| Frontend | `frontend/src/pages/SessionsPage.tsx` | Modal de creación con formulario |
-| Backend | `backend/src/controllers/session.controller.ts` | `createSession()` |
-| Backend | `backend/src/routes/session.routes.ts` | `POST /api/v1/matchings/:matchingId/sessions` |
-| Backend | `backend/src/schemas/session.schema.ts` | Validación con Zod |
-
-**Flujo:**
-1. Usuario hace clic en "+ Nueva sesión"
-2. Llena título, fecha, duración y notas opcionales
-3. Frontend envía `POST /api/v1/matchings/:matchingId/sessions`
-4. Backend verifica que el matching esté activo y el usuario pertenezca
-5. Crea la sesión con estado `Programada`
-
----
-
-### ✅ UC-13 — Realizar sesión de mentoría
-
-| Campo | Detalle |
-|-------|--------|
-| **Descripción** | Ejecutar la sesión y marcarla como Realizada, agregando notas y feedback. |
+| **Descripción** | El Mentor ingresa al Aula de un Padawan y agenda una nueva sesión en la pestaña "Trabajo en clase". |
 | **Actores** | 🧙‍♂️ Mentor Jedi |
 | **Estado** | ✅ Implementado |
 | **Fecha** | 2026-05-17 |
@@ -356,15 +329,44 @@
 
 | Capa | Archivo | Responsabilidad |
 |------|---------|----------------|
-| Frontend | `frontend/src/pages/SessionsPage.tsx` | Botón "Completar" + modal con notas |
+| Frontend | `frontend/src/components/classroom/WorkTab.tsx` | Modal de creación (solo para mentores) |
+| Backend | `backend/src/controllers/session.controller.ts` | `createSession()` |
+| Backend | `backend/src/routes/session.routes.ts` | `POST /api/v1/matchings/:matchingId/sessions` |
+| Backend | `backend/src/schemas/session.schema.ts` | Validación con Zod |
+
+**Flujo:**
+1. **Solo mentores**: entra a "Mis Aulas", selecciona un Padawan, va a la pestaña "Trabajo en clase".
+2. Hace clic en "+ Nueva sesión".
+3. Llena título, fecha, duración y notas opcionales.
+4. Frontend envía `POST /api/v1/matchings/:matchingId/sessions`.
+5. Backend verifica que el mentor sea propietario del matching (activo).
+6. Crea sesión con estado `Programada` asignada al Padawan.
+7. **Padawans**: ven sesiones programadas pero NO pueden crear nuevas.
+
+---
+
+### ✅ UC-13 — Realizar sesión de mentoría
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | Ejecutar la sesión y marcarla como Realizada, agregando notas y feedback en la pestaña "Trabajo en clase". |
+| **Actores** | 🧙‍♂️ Mentor Jedi |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/components/classroom/WorkTab.tsx` | Botón "Completar" + modal con notas |
 | Backend | `backend/src/controllers/session.controller.ts` | `updateSession()` con `estado: Realizada` |
 | Backend | `backend/src/routes/session.routes.ts` | `PUT /api/v1/sessions/:sesionId` |
 
 **Flujo:**
-1. Mentor Jedi ve sesiones programadas
-2. Hace clic en "✓ Completar" → se abre modal
-3. Agrega notas y feedback de la sesión
-4. Backend actualiza estado a `Realizada` y guarda notas
+1. Mentor Jedi ve sesiones programadas en "Trabajo en clase".
+2. Hace clic en "✓ Completar" → se abre modal.
+3. Agrega notas y feedback de la sesión.
+4. Backend actualiza estado a `Realizada` y guarda notas.
 
 ---
 
@@ -381,14 +383,14 @@
 
 | Capa | Archivo | Responsabilidad |
 |------|---------|----------------|
-| Frontend | `frontend/src/pages/SessionsPage.tsx` | Botón "✕ Cancelar" en sesiones programadas |
+| Frontend | `frontend/src/components/classroom/WorkTab.tsx` | Botón "✕ Cancelar" en sesiones programadas |
 | Backend | `backend/src/controllers/session.controller.ts` | `deleteSession()` — soft delete |
 | Backend | `backend/src/routes/session.routes.ts` | `DELETE /api/v1/sessions/:sesionId` |
 
 **Flujo:**
-1. Usuario ve una sesión con estado `Programada`
-2. Hace clic en "✕ Cancelar"
-3. Backend cambia estado a `Cancelada` (soft delete, no borra datos)
+1. Usuario ve una sesión con estado `Programada` en "Trabajo en clase".
+2. Hace clic en "✕ Cancelar".
+3. Backend cambia estado a `Cancelada` (soft delete, no borra datos).
 
 ---
 
@@ -396,7 +398,7 @@
 
 | Campo | Detalle |
 |-------|--------|
-| **Descripción** | Consultar sesiones pasadas con sus notas, OKRs y feedback asociados. |
+| **Descripción** | Consultar sesiones pasadas en el Aula Virtual con sus notas y tareas asociadas. |
 | **Actores** | 🧑‍🎓 Padawan · 🧙‍♂️ Mentor Jedi |
 | **Estado** | ✅ Implementado |
 | **Fecha** | 2026-05-17 |
@@ -405,16 +407,15 @@
 
 | Capa | Archivo | Responsabilidad |
 |------|---------|----------------|
-| Frontend | `frontend/src/pages/SessionsPage.tsx` | Tabs (Todas/Programadas/Realizadas/Canceladas) |
-| Frontend | `frontend/src/services/api.ts` | `sessionService.getMySessions()` |
-| Backend | `backend/src/controllers/session.controller.ts` | `getMySessions()` |
-| Backend | `backend/src/routes/session.routes.ts` | `GET /api/v1/sessions/my-sessions` |
+| Frontend | `frontend/src/components/classroom/WorkTab.tsx` | Visualización en bloques (Programadas/Realizadas) |
+| Frontend | `frontend/src/services/api.ts` | `api.get(/matchings/:id/sessions)` |
+| Backend | `backend/src/controllers/session.controller.ts` | `getSessionsByMatching()` |
 
 **Flujo:**
-1. Usuario accede a la sección "Sesiones"
-2. Ve todas las sesiones con filtros por estado (tabs)
-3. Cada tarjeta muestra: título, fecha, mentor/padawan, notas, conteo de OKRs
-4. Puede navegar a los OKRs de cada sesión con "Ver OKRs →"
+1. Usuario accede a un "Aula" y a la pestaña "Trabajo en clase".
+2. Ve las sesiones agrupadas por Programadas y Realizadas.
+3. Cada tarjeta muestra: título, fecha, notas, conteo de tareas (OKRs).
+4. Puede navegar a las tareas de cada sesión con "Ver tareas →".
 
 ## 🎯 OKRs
 
@@ -422,7 +423,7 @@
 
 | Campo | Detalle |
 |-------|--------|
-| **Descripción** | El Mentor define un objetivo medible para el Padawan con valor meta y fecha límite. |
+| **Descripción** | El Mentor define una tarea (antiguo OKR) con valor de puntuación máxima y fecha límite. |
 | **Actores** | 🧙‍♂️ Mentor Jedi |
 | **Estado** | ✅ Implementado |
 | **Fecha** | 2026-05-17 |
@@ -431,24 +432,21 @@
 
 | Capa | Archivo | Responsabilidad |
 |------|---------|----------------|
-| Frontend | `frontend/src/pages/OKRPage.tsx` | Modal de creación con descripción, indicador, meta y fecha |
+| Frontend | `frontend/src/pages/OKRPage.tsx` | Modal de creación con descripción, puntaje máx y fecha |
 | Backend | `backend/src/controllers/okr.controller.ts` | `createOKR()` |
-| Backend | `backend/src/routes/okr.routes.ts` | `POST /api/v1/sessions/:sesionId/okrs` |
-| Backend | `backend/src/schemas/okr.schema.ts` | Validación con Zod |
 
 **Flujo:**
-1. Mentor Jedi hace clic en "+ Crear OKR"
-2. Llena descripción, indicador, valor meta y fecha límite
-3. Frontend envía `POST /api/v1/sessions/:sesionId/okrs`
-4. Backend crea el OKR con estado `Pendiente`
+1. Mentor Jedi hace clic en "+ Nueva tarea" dentro de una sesión.
+2. Llena descripción, puntaje máximo y fecha límite.
+3. Backend crea la tarea con estado `Pendiente`.
 
 ---
 
-### ✅ UC-17 — Actualizar progreso de un OKR
+### ✅ UC-17 — Entregar tarea (Estudiante)
 
 | Campo | Detalle |
 |-------|--------|
-| **Descripción** | El Padawan registra el valor alcanzado y cambia el estado a EnProgreso. |
+| **Descripción** | El Padawan registra su entrega (texto o enlace) y cambia el estado a Entregado (EnProgreso). |
 | **Actores** | 🧑‍🎓 Padawan |
 | **Estado** | ✅ Implementado |
 | **Fecha** | 2026-05-17 |
@@ -457,52 +455,22 @@
 
 | Capa | Archivo | Responsabilidad |
 |------|---------|----------------|
-| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "Actualizar progreso" + modal |
+| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "Entregar tarea" + modal de envío |
 | Backend | `backend/src/controllers/okr.controller.ts` | `updateOKR()` |
-| Backend | `backend/src/routes/okr.routes.ts` | `PUT /api/v1/okrs/:okrId` |
 
 **Flujo:**
-1. Padawan ve OKRs pendientes o en progreso
-2. Hace clic en "📊 Actualizar progreso" → modal
-3. Ingresa nuevo valor actual
-4. Si el valor > 0 y estado era Pendiente, cambia automáticamente a `EnProgreso`
+1. Padawan ve tareas pendientes.
+2. Hace clic en "📤 Entregar tarea" → modal.
+3. Ingresa su texto o enlace y envía.
+4. Estado cambia automáticamente a `EnProgreso`.
 
 ---
 
-### ✅ UC-18 — Completar un OKR
+### ✅ UC-18 — Calificar tarea (Mentor)
 
 | Campo | Detalle |
 |-------|--------|
-| **Descripción** | El Padawan marca un OKR como Completado cuando supera la meta. El sistema actualiza el score. |
-| **Actores** | 🧑‍🎓 Padawan · 🤖 Sistema / IA |
-| **Estado** | ✅ Implementado |
-| **Fecha** | 2026-05-17 |
-
-**Archivos clave:**
-
-| Capa | Archivo | Responsabilidad |
-|------|---------|----------------|
-| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "✓ Completar" + modal con nota de cierre |
-| Backend | `backend/src/controllers/okr.controller.ts` | `completeOKR()` — transacción ACID |
-| Backend | `backend/src/routes/okr.routes.ts` | `PATCH /api/v1/okrs/:okrId/complete` |
-
-**Flujo:**
-1. Padawan con OKR en `EnProgreso` hace clic en "✓ Completar"
-2. Ingresa valor alcanzado (≥ meta) y nota de cierre
-3. Backend ejecuta transacción ACID:
-   - Verifica propiedad y estado
-   - Valida que `valor_actual ≥ valor_meta`
-   - Actualiza OKR a `Completado`
-   - Registra en `okr_historial` (auditoría)
-   - Suma +12 al `score_empleabilidad` (máximo 100)
-
----
-
-### ✅ UC-19 — Dar feedback sobre un OKR
-
-| Campo | Detalle |
-|-------|--------|
-| **Descripción** | El Mentor revisa el OKR completado y registra su conformidad o solicita revisión. |
+| **Descripción** | El Mentor evalúa una tarea entregada, asigna una calificación y feedback. |
 | **Actores** | 🧙‍♂️ Mentor Jedi |
 | **Estado** | ✅ Implementado |
 | **Fecha** | 2026-05-17 |
@@ -511,18 +479,17 @@
 
 | Capa | Archivo | Responsabilidad |
 |------|---------|----------------|
-| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "💬 Dar feedback" + modal con aprobar/revisar |
-| Backend | `backend/src/controllers/okr.controller.ts` | `feedbackOKR()` |
-| Backend | `backend/src/routes/okr.routes.ts` | `PATCH /api/v1/okrs/:okrId/feedback` |
-| Backend | `backend/src/schemas/okr.schema.ts` | `feedbackOKRSchema` |
+| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "✏️ Calificar" + modal con nota |
+| Backend | `backend/src/controllers/okr.controller.ts` | `completeOKR()` |
 
 **Flujo:**
-1. Mentor Jedi ve OKRs completados
-2. Hace clic en "💬 Dar feedback" → modal
-3. Escribe comentario y elige:
-   - "✓ Aprobar" → agrega nota de aprobación
-   - "🔄 Pedir revisión" → revierte estado a `EnProgreso`
-4. Se registra en `okr_historial`
+1. Mentor ve tarea "Entregada" (`EnProgreso`).
+2. Hace clic en "✏️ Calificar" → modal.
+3. Ingresa el puntaje (0 hasta el máximo) y el feedback.
+4. Backend ejecuta actualización:
+   - Cambia estado a `Completado`.
+   - Suma +12 al `score_empleabilidad` del padawan (máximo 100).
+5. Se muestra la calificación final con una barra de progreso.
 
 ## 📈 Placement
 
@@ -584,10 +551,11 @@
 
 | Campo | Detalle |
 |-------|--------|
-| **Descripción** | El Padawan explora vacantes filtradas por sector, modalidad y habilidades de su perfil. |
-| **Actores** | 🧑‍🎓 Padawan |
+| **Descripción** | El Padawan explora vacantes filtradas por sector, modalidad y habilidades. El Mentor Jedi puede visualizar las vacantes para recomendarlas, pero en modo de solo lectura. |
+| **Actores** | 🧑‍🎓 Padawan · 🧙‍♂️ Mentor Jedi |
 | **Estado** | ✅ Implementado |
 | **Fecha** | 2026-05-17 |
+| **Restricción** | Visible para Padawans y Mentores. |
 
 **Archivos clave:**
 
@@ -599,10 +567,10 @@
 | Backend | `backend/src/routes/vacancy.routes.ts` | `GET /api/v1/vacancies?modalidad=` |
 
 **Flujo:**
-1. Padawan accede a la sección "Vacantes"
-2. Puede buscar por texto (título, empresa, sector) en tiempo real
-3. Puede filtrar por modalidad (Remoto, Presencial, Híbrido)
-4. Ve tarjetas con título, empresa, rango salarial y botón para postularse
+1. Usuario accede a la sección "Vacantes".
+2. **Padawans**: ven botón "Postularme" y la pestaña "Mis Postulaciones".
+3. **Mentores**: ven la lista como "Mercado Laboral" en modo lectura, sin opción de postularse.
+4. Pueden buscar por texto (título, empresa, sector) en tiempo real y filtrar por modalidad.
 
 ---
 
@@ -612,22 +580,23 @@
 |-------|--------|
 | **Descripción** | El Padawan aplica a una oferta, enviando su perfil dinámico a la empresa. |
 | **Actores** | 🧑‍🎓 Padawan |
-| **Estado** | ✅ Implementado |
-| **Fecha** | 2026-05-17 |
+| **Restricción** | Solo Padawans pueden postularse. |
 
 **Archivos clave:**
 
 | Capa | Archivo | Responsabilidad |
 |------|---------|----------------|
-| Frontend | `frontend/src/pages/VacanciesPage.tsx` | Botón "Postularme" + modal con mensaje |
+| Frontend | `frontend/src/pages/VacanciesPage.tsx` | Botón "Postularme" + modal con mensaje (solo Padawans) |
 | Frontend | `frontend/src/services/api.ts` | `vacancyService.apply()` |
 | Backend | `backend/src/controllers/vacancy.controller.ts` | `applyToVacancy()` |
 | Backend | `backend/src/routes/vacancy.routes.ts` | `POST /api/v1/vacancies/:vacancyId/apply` |
 
 **Flujo:**
-1. Padawan navega las vacantes y hace clic en "Postularme"
-2. Escribe un mensaje opcional de presentación
+1. **Solo Padawans**: navegan las vacantes y hacen clic en "Postularme"
+2. Escriben un mensaje opcional de presentación
 3. Frontend envía `POST /api/v1/vacancies/:vacancyId/apply`
+4. Backend verifica autenticación (Padawan) y no haya postulación previa
+5. Crea registro en `postulacion` →ies/:vacancyId/apply`
 4. Backend verifica que no haya postulación previa (evita duplicados)
 5. Crea registro en `postulacion` → la tarjeta cambia a "✓ Postulado"
 
@@ -640,7 +609,7 @@
 | **Descripción** | La Empresa puede editar, activar o desactivar sus ofertas laborales. |
 | **Actores** | 🏢 Empresa |
 | **Estado** | ✅ Implementado |
-| **Fecha** | 2026-05-17 |
+| **Restricción** | Solo Admins/Empresas (no visible en UI normal). |
 
 **Archivos clave:**
 
@@ -651,9 +620,11 @@
 | Backend | `backend/src/schemas/vacancy.schema.ts` | `updateVacancySchema` — incluye campo `activa` |
 
 **Flujo:**
-1. Admin/Empresa envía `PUT /api/v1/vacancies/:vacancyId`
-2. Puede actualizar título, descripción, salario, modalidad
-3. Puede activar o desactivar con el campo `activa: true/false`
+1. **Solo Admins**: envían `PUT /api/v1/vacancies/:vacancyId`
+2. Pueden actualizar título, descripción, salario, modalidad
+3. Pueden activar o desactivar con el campo `activa: true/false`
+4. Vacantes desactivadas dejan de aparecer en la lista pública
+5. No hay UI para estudiantes (acceso backend-only para admins)`
 4. Vacantes desactivadas dejan de aparecer en la lista pública
 
 ---
@@ -729,12 +700,59 @@
 
 ---
 
+## 🏫 Aula Virtual & Chat
+
+### ✅ UC-27 — Colaborar en el feed del Aula Virtual
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | Padawans y Mentores pueden publicar anuncios, enlaces o material en el muro ("Novedades") del Aula. |
+| **Actores** | 🧑‍🎓 Padawan · 🧙‍♂️ Mentor Jedi |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+- `frontend/src/pages/ClassroomPage.tsx`
+- `frontend/src/components/classroom/FeedTab.tsx`
+- `backend/src/controllers/classroom.controller.ts`
+- `backend/src/db/migrations/004_classroom.sql`
+
+**Flujo:**
+1. Usuario entra a su Aula y ve la pestaña "Novedades".
+2. Puede crear una publicación (Anuncio, Material, Enlace).
+3. Puede comentar en publicaciones existentes.
+4. El Mentor puede fijar (Pin) o eliminar cualquier publicación; el Padawan solo puede eliminar las propias.
+
+---
+
+### ✅ UC-28 — Chatear directamente (1:1)
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | Un widget flotante permite enviar y recibir mensajes en tiempo real dentro del Aula Virtual. |
+| **Actores** | 🧑‍🎓 Padawan · 🧙‍♂️ Mentor Jedi |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+- `frontend/src/components/classroom/ChatWidget.tsx`
+- `backend/src/controllers/chat.controller.ts`
+- `backend/src/routes/chat.routes.ts`
+
+**Flujo:**
+1. Dentro del Aula, se muestra un botón flotante 💬 en la esquina inferior derecha.
+2. Al abrirlo, muestra el historial de mensajes de ese matching.
+3. El usuario envía un mensaje y se actualiza la interfaz (hace polling automático).
+4. El widget muestra una burbuja roja con los mensajes no leídos.
+
+---
+
 ## 📊 Resumen de Progreso
 
 | Métrica | Valor |
 |---------|-------|
-| **Total Casos de Uso** | 26 |
-| **Implementados** | 26 (UC-01 a UC-26) |
+| **Total Casos de Uso** | 28 |
+| **Implementados** | 28 (UC-01 a UC-28) |
 | **En progreso** | 0 |
 | **Pendientes** | 0 |
 | **Avance** | **100%** ✅ |

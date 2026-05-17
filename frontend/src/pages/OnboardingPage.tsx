@@ -15,6 +15,7 @@ const OnboardingPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(0); // current question index
 
   useEffect(() => {
@@ -36,10 +37,13 @@ const OnboardingPage = () => {
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    setError(null);
     try {
       const res = await api.post('/onboarding/diagnostic', { respuestas: answers });
       setEvaluation(res.data.data);
-    } catch { /* handled */ }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Hubo un error al enviar la evaluación. Intenta nuevamente.');
+    }
     finally { setSubmitting(false); }
   };
 
@@ -58,7 +62,8 @@ const OnboardingPage = () => {
 
   if (loading) return <LoadingSpinner size="lg" />;
 
-  const allAnswered = questions.length > 0 && Object.keys(answers).length === questions.length;
+  // Validar que TODAS las preguntas tengan respuesta
+  const allAnswered = questions.length > 0 && questions.every((q) => answers[q.id]);
 
   // If already completed everything
   if (evaluation && learningPath) {
@@ -199,22 +204,34 @@ const OnboardingPage = () => {
       )}
 
       {/* Nav */}
-      <div className="flex justify-between">
+      <div className="flex justify-between mt-4">
         <button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}
                 className="btn-ghost text-sm" style={{ opacity: step === 0 ? 0.4 : 1 }}>
           ← Anterior
         </button>
         {step < questions.length - 1 ? (
-          <button onClick={() => setStep(step + 1)} className="btn-secondary text-sm">
+          <button onClick={() => setStep(step + 1)} className="btn-secondary text-sm" disabled={!answers[currentQ.id]}>
             Siguiente →
           </button>
-        ) : allAnswered ? (
-          <button onClick={handleSubmit} disabled={submitting} className="btn-primary text-sm flex items-center gap-2">
-            {submitting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-            Enviar evaluación
-          </button>
-        ) : null}
+        ) : (
+          allAnswered ? (
+            <button onClick={handleSubmit} disabled={submitting} className="btn-primary text-sm flex items-center gap-2">
+              {submitting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+              {submitting ? 'Enviando...' : 'Enviar evaluación'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-2" style={{ color: 'var(--color-warning)' }}>
+              <span className="text-xs">⚠️ Responde todas las preguntas</span>
+            </div>
+          )
+        )}
       </div>
+
+      {error && (
+        <div className="mt-4 p-3 rounded-lg text-sm text-center" style={{ backgroundColor: 'var(--color-danger-light)', color: 'var(--color-danger-dark)' }}>
+          {error}
+        </div>
+      )}
     </div>
   );
 };

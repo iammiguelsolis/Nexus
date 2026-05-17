@@ -106,33 +106,33 @@ const VacanciesPage = () => {
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold font-display" style={{ color: 'var(--text-primary)' }}>
-          Vacantes Laborales
+        <h1 className="text-3xl font-bold font-display" style={{ color: 'var(--text-primary)' }}>
+          💼 {isPadawan ? 'Oportunidades Laborales' : 'Mercado Laboral'}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          Explora oportunidades laborales alineadas a tu perfil.
+          {isPadawan 
+            ? 'Explora posiciones alineadas a tu perfil y postúlate directamente.'
+            : 'Explora las vacantes disponibles para recomendarlas a tus Padawans.'}
         </p>
       </div>
 
-      {/* Tabs: Vacantes / Mis Postulaciones */}
-      {isAuthenticated && isPadawan && (
-        <div className="flex gap-1 mb-5 p-1 rounded-lg" style={{ backgroundColor: 'var(--color-neutral-100)' }}>
-          {([
-            { key: 'vacantes' as TabView, label: 'Vacantes', count: filtered.length },
-            { key: 'postulaciones' as TabView, label: 'Mis Postulaciones', count: applications.length },
-          ]).map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-                    className="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all"
-                    style={{
-                      backgroundColor: tab === t.key ? 'var(--surface-card)' : 'transparent',
-                      color: tab === t.key ? 'var(--text-primary)' : 'var(--text-muted)',
-                      boxShadow: tab === t.key ? 'var(--shadow-sm)' : 'none',
-                    }}>
-              {t.label} <span className="ml-1 opacity-60">({t.count})</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Tabs: Vacantes / Mis Postulaciones (Solo Padawan ve Postulaciones) */}
+      <div className="flex gap-1 mb-5 p-1 rounded-lg" style={{ backgroundColor: 'var(--color-neutral-100)' }}>
+        {([
+          { key: 'vacantes' as TabView, label: 'Buscar Vacantes', count: filtered.length, show: true },
+          { key: 'postulaciones' as TabView, label: 'Mis Postulaciones', count: applications.length, show: isPadawan },
+        ]).filter(t => t.show).map((t) => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+                  className="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all"
+                  style={{
+                    backgroundColor: tab === t.key ? 'var(--surface-card)' : 'transparent',
+                    color: tab === t.key ? 'var(--text-primary)' : 'var(--text-muted)',
+                    boxShadow: tab === t.key ? 'var(--shadow-sm)' : 'none',
+                  }}>
+            {t.label} <span className="ml-1 opacity-60">({t.count})</span>
+          </button>
+        ))}
+      </div>
 
       {tab === 'vacantes' && (
         <>

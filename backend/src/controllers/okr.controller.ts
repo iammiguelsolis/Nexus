@@ -231,3 +231,77 @@ export const completeOKR = async (req: AuthRequest, res: Response, next: NextFun
     client.release();
   }
 };
+
+/**
+ * PATCH /api/v1/okrs/:okrId/feedback
+ * UC-19: Mentor da feedback sobre un OKR completado.
+ */
+export const feedbackOKR = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const { okrId } = req.params;
+  const { accion, comentario } = req.body; // 'aprobar' | 'revisar'
+  const userId = req.user?.userId;
+
+  try {
+    if (req.user?.rol !== 'Jedi') {
+      res.status(403).json({ error: 'Solo el Mentor Jedi puede dar feedback', code: 'FORBIDDEN' });
+      return;
+    }
+
+    if (!['aprobar', 'revisar'].includes(accion)) {
+      res.status(400).json({ error: 'Acción debe ser "aprobar" o "revisar"' });
+      return;
+    }
+
+    // Verify OKR belongs to this mentor's matching
+    const check = await pool.query(
+      `SELECT o.okr_id, o.estado
+       FROM okr o
+       JOIN sesion_mentoria sm ON o.sesion_id = sm.sesion_id
+       JOIN matching m ON sm.matching_id = m.matching_id
+       JOIN mentor mt ON m.mentor_id = mt.mentor_id
+       WHERE o.okr_id = $1 AND mt.usuario_id = $2`,
+      [okrId, userId]
+    );
+
+    if (check.rows.length === 0) {
+      res.status(404).json({ error: 'OKR no encontrado o no autorizado', code: 'OKR_NOT_FOUND' });
+      return;
+    }
+
+    if (accion === 'aprobar') {
+      // Insert audit trail
+      await pool.query(
+        `INSERT INTO okr_historial (okr_id, estado_anterior, estado_nuevo, valor_actual_registrado, usuario_id, ip_origen)
+         VALUES ($1, $2, 'Completado', 0, $3, $4)`,
+        [okrId, check.rows[0].estado, userId, req.ip]
+      );
+
+      const result = await pool.query(
+        `UPDATE okr SET notas = COALESCE(notas, '') || E'\n[Feedback Mentor]: ' || $1, fecha_actualizacion = NOW()
+         WHERE okr_id = $2 RETURNING *`,
+        [comentario || 'Aprobado ✓', okrId]
+      );
+
+      console.log(`[OKR] Feedback approved: ${okrId} by ${req.user?.email}`);
+      res.json({ success: true, data: result.rows[0] });
+    } else {
+      // Revert to EnProgreso for revision
+      await pool.query(
+        `INSERT INTO okr_historial (okr_id, estado_anterior, estado_nuevo, valor_actual_registrado, usuario_id, ip_origen)
+         VALUES ($1, 'Completado', 'EnProgreso', 0, $2, $3)`,
+        [okrId, userId, req.ip]
+      );
+
+      const result = await pool.query(
+        `UPDATE okr SET estado = 'EnProgreso', notas = COALESCE(notas, '') || E'\n[Revisión Mentor]: ' || $1, fecha_actualizacion = NOW()
+         WHERE okr_id = $2 RETURNING *`,
+        [comentario || 'Requiere revisión', okrId]
+      );
+
+      console.log(`[OKR] Feedback revision requested: ${okrId} by ${req.user?.email}`);
+      res.json({ success: true, data: result.rows[0] });
+    }
+  } catch (err) {
+    next(err);
+  }
+};

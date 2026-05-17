@@ -418,12 +418,111 @@
 
 ## 🎯 OKRs
 
-| ID | Caso de Uso | Estado |
-|----|-------------|--------|
-| UC-16 | Crear OKR en una sesión | ⏳ Pendiente |
-| UC-17 | Actualizar progreso de un OKR | ⏳ Pendiente |
-| UC-18 | Completar un OKR | ⏳ Pendiente |
-| UC-19 | Dar feedback sobre un OKR | ⏳ Pendiente |
+### ✅ UC-16 — Crear OKR en una sesión
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Mentor define un objetivo medible para el Padawan con valor meta y fecha límite. |
+| **Actores** | 🧙‍♂️ Mentor Jedi |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/OKRPage.tsx` | Modal de creación con descripción, indicador, meta y fecha |
+| Backend | `backend/src/controllers/okr.controller.ts` | `createOKR()` |
+| Backend | `backend/src/routes/okr.routes.ts` | `POST /api/v1/sessions/:sesionId/okrs` |
+| Backend | `backend/src/schemas/okr.schema.ts` | Validación con Zod |
+
+**Flujo:**
+1. Mentor Jedi hace clic en "+ Crear OKR"
+2. Llena descripción, indicador, valor meta y fecha límite
+3. Frontend envía `POST /api/v1/sessions/:sesionId/okrs`
+4. Backend crea el OKR con estado `Pendiente`
+
+---
+
+### ✅ UC-17 — Actualizar progreso de un OKR
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Padawan registra el valor alcanzado y cambia el estado a EnProgreso. |
+| **Actores** | 🧑‍🎓 Padawan |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "Actualizar progreso" + modal |
+| Backend | `backend/src/controllers/okr.controller.ts` | `updateOKR()` |
+| Backend | `backend/src/routes/okr.routes.ts` | `PUT /api/v1/okrs/:okrId` |
+
+**Flujo:**
+1. Padawan ve OKRs pendientes o en progreso
+2. Hace clic en "📊 Actualizar progreso" → modal
+3. Ingresa nuevo valor actual
+4. Si el valor > 0 y estado era Pendiente, cambia automáticamente a `EnProgreso`
+
+---
+
+### ✅ UC-18 — Completar un OKR
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Padawan marca un OKR como Completado cuando supera la meta. El sistema actualiza el score. |
+| **Actores** | 🧑‍🎓 Padawan · 🤖 Sistema / IA |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "✓ Completar" + modal con nota de cierre |
+| Backend | `backend/src/controllers/okr.controller.ts` | `completeOKR()` — transacción ACID |
+| Backend | `backend/src/routes/okr.routes.ts` | `PATCH /api/v1/okrs/:okrId/complete` |
+
+**Flujo:**
+1. Padawan con OKR en `EnProgreso` hace clic en "✓ Completar"
+2. Ingresa valor alcanzado (≥ meta) y nota de cierre
+3. Backend ejecuta transacción ACID:
+   - Verifica propiedad y estado
+   - Valida que `valor_actual ≥ valor_meta`
+   - Actualiza OKR a `Completado`
+   - Registra en `okr_historial` (auditoría)
+   - Suma +12 al `score_empleabilidad` (máximo 100)
+
+---
+
+### ✅ UC-19 — Dar feedback sobre un OKR
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Mentor revisa el OKR completado y registra su conformidad o solicita revisión. |
+| **Actores** | 🧙‍♂️ Mentor Jedi |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/OKRPage.tsx` | Botón "💬 Dar feedback" + modal con aprobar/revisar |
+| Backend | `backend/src/controllers/okr.controller.ts` | `feedbackOKR()` |
+| Backend | `backend/src/routes/okr.routes.ts` | `PATCH /api/v1/okrs/:okrId/feedback` |
+| Backend | `backend/src/schemas/okr.schema.ts` | `feedbackOKRSchema` |
+
+**Flujo:**
+1. Mentor Jedi ve OKRs completados
+2. Hace clic en "💬 Dar feedback" → modal
+3. Escribe comentario y elige:
+   - "✓ Aprobar" → agrega nota de aprobación
+   - "🔄 Pedir revisión" → revierte estado a `EnProgreso`
+4. Se registra en `okr_historial`
 
 ## 📈 Placement
 
@@ -459,10 +558,10 @@
 | Métrica | Valor |
 |---------|-------|
 | **Total Casos de Uso** | 26 |
-| **Implementados** | 15 (UC-01 a UC-15) |
+| **Implementados** | 19 (UC-01 a UC-19) |
 | **En progreso** | 0 |
-| **Pendientes** | 11 |
-| **Avance** | 58% |
+| **Pendientes** | 7 |
+| **Avance** | 73% |
 
 ---
 

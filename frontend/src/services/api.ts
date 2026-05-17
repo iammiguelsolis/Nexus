@@ -73,6 +73,9 @@ export const okrService = {
 
   complete: (okrId: string, data: { valor_actual: number; nota_cierre: string }) =>
     api.patch(`/okrs/${okrId}/complete`, data),
+
+  feedback: (okrId: string, data: { accion: 'aprobar' | 'revisar'; comentario?: string }) =>
+    api.patch(`/okrs/${okrId}/feedback`, data),
 };
 
 // ============ Vacancies Service ============

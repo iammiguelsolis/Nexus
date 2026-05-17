@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { createOKR, listOKRs, updateOKR, deleteOKR, completeOKR } from '../controllers/okr.controller';
+import { createOKR, listOKRs, updateOKR, deleteOKR, completeOKR, feedbackOKR } from '../controllers/okr.controller';
 import { validate } from '../middleware/validate.middleware';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { createOKRSchema, updateOKRSchema, completeOKRSchema, sesionIdParamSchema, okrIdParamSchema } from '../schemas/okr.schema';
+import { createOKRSchema, updateOKRSchema, completeOKRSchema, feedbackOKRSchema, sesionIdParamSchema, okrIdParamSchema } from '../schemas/okr.schema';
 
 const router = Router();
 
@@ -16,5 +16,7 @@ router.get('/sessions/:sesionId/okrs', validate(sesionIdParamSchema, 'params'), 
 router.put('/okrs/:okrId', validate(okrIdParamSchema, 'params'), validate(updateOKRSchema), updateOKR);
 router.delete('/okrs/:okrId', validate(okrIdParamSchema, 'params'), deleteOKR);
 router.patch('/okrs/:okrId/complete', validate(okrIdParamSchema, 'params'), validate(completeOKRSchema), completeOKR);
+router.patch('/okrs/:okrId/feedback', validate(okrIdParamSchema, 'params'), validate(feedbackOKRSchema), feedbackOKR);
 
 export default router;
+

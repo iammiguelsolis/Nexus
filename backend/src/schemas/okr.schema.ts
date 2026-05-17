@@ -21,6 +21,11 @@ export const completeOKRSchema = z.object({
   nota_cierre: z.string().min(1).max(2000),
 });
 
+export const feedbackOKRSchema = z.object({
+  accion: z.enum(['aprobar', 'revisar']),
+  comentario: z.string().max(2000).optional(),
+});
+
 export const sesionIdParamSchema = z.object({
   sesionId: z.string().uuid(),
 });
@@ -32,3 +37,5 @@ export const okrIdParamSchema = z.object({
 export type CreateOKRInput = z.infer<typeof createOKRSchema>;
 export type UpdateOKRInput = z.infer<typeof updateOKRSchema>;
 export type CompleteOKRInput = z.infer<typeof completeOKRSchema>;
+export type FeedbackOKRInput = z.infer<typeof feedbackOKRSchema>;
+

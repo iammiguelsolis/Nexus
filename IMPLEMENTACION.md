@@ -526,16 +526,88 @@
 
 ## 📈 Placement
 
-| ID | Caso de Uso | Estado |
-|----|-------------|--------|
-| UC-20 | Ver score de empleabilidad | ⏳ Pendiente |
+### ✅ UC-20 — Ver score de empleabilidad
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Padawan consulta su score actualizado tras completar OKRs y sesiones. |
+| **Actores** | 🧑‍🎓 Padawan · 🤖 Sistema / IA |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/DashboardPage.tsx` | Tarjeta de score con valor destacado |
+| Frontend | `frontend/src/pages/ProfilePage.tsx` | Score visible en perfil |
+| Backend | `backend/src/controllers/dashboard.controller.ts` | `getDashboard()` — retorna `score_empleabilidad` |
+| Backend | `backend/src/controllers/okr.controller.ts` | `completeOKR()` — suma +12 al score (transacción ACID) |
+
+**Flujo:**
+1. Padawan accede al Dashboard o a su Perfil
+2. Ve su score de empleabilidad actualizado (0–100)
+3. El score sube automáticamente al completar OKRs (+12 por OKR, máximo 100)
+4. Se calcula en transacción ACID dentro de `completeOKR()`
+
+---
 
 ## 💼 Vacantes
 
+### ✅ UC-21 — Publicar vacante laboral
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | La Empresa crea una oferta con descripción, skills requeridas, salario y modalidad. |
+| **Actores** | 🏢 Empresa |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Backend | `backend/src/controllers/vacancy.controller.ts` | `createVacancy()` |
+| Backend | `backend/src/routes/vacancy.routes.ts` | `POST /api/v1/vacancies` (rol Admin) |
+| Backend | `backend/src/schemas/vacancy.schema.ts` | Validación con Zod |
+| DB | `backend/src/db/migrations/001_init.sql` | Tablas `vacante` + `empresa` |
+
+**Flujo:**
+1. Admin/Empresa envía `POST /api/v1/vacancies` con datos de la oferta
+2. Backend valida título, descripción, salario mín/máx y modalidad
+3. Crea la vacante vinculada a una empresa
+4. La vacante aparece automáticamente en la lista pública
+
+---
+
+### ✅ UC-22 — Buscar y filtrar vacantes
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Padawan explora vacantes filtradas por sector, modalidad y habilidades de su perfil. |
+| **Actores** | 🧑‍🎓 Padawan |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/VacanciesPage.tsx` | Búsqueda por texto + filtro de modalidad |
+| Frontend | `frontend/src/services/api.ts` | `vacancyService.list()` con parámetro modalidad |
+| Backend | `backend/src/controllers/vacancy.controller.ts` | `listVacancies()` con filtro |
+| Backend | `backend/src/routes/vacancy.routes.ts` | `GET /api/v1/vacancies?modalidad=` |
+
+**Flujo:**
+1. Padawan accede a la sección "Vacantes"
+2. Puede buscar por texto (título, empresa, sector) en tiempo real
+3. Puede filtrar por modalidad (Remoto, Presencial, Híbrido)
+4. Ve tarjetas con título, empresa, rango salarial y botón para postularse
+
+---
+
 | ID | Caso de Uso | Estado |
 |----|-------------|--------|
-| UC-21 | Publicar vacante laboral | ⏳ Pendiente |
-| UC-22 | Buscar y filtrar vacantes | ⏳ Pendiente |
 | UC-23 | Postularse a una vacante | ⏳ Pendiente |
 | UC-24 | Gestionar vacantes publicadas | ⏳ Pendiente |
 
@@ -558,10 +630,10 @@
 | Métrica | Valor |
 |---------|-------|
 | **Total Casos de Uso** | 26 |
-| **Implementados** | 19 (UC-01 a UC-19) |
+| **Implementados** | 22 (UC-01 a UC-22) |
 | **En progreso** | 0 |
-| **Pendientes** | 7 |
-| **Avance** | 73% |
+| **Pendientes** | 4 |
+| **Avance** | 85% |
 
 ---
 

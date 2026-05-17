@@ -11,6 +11,9 @@ import sessionRoutes from './routes/session.routes';
 import okrRoutes from './routes/okr.routes';
 import vacancyRoutes from './routes/vacancy.routes';
 import profileRoutes from './routes/profile.routes';
+import onboardingRoutes from './routes/onboarding.routes';
+import dashboardRoutes from './routes/dashboard.routes';
+import matchingRoutes from './routes/matching.routes';
 
 const app = express();
 
@@ -43,6 +46,9 @@ app.use('/api/v1', sessionRoutes);
 app.use('/api/v1', okrRoutes);
 app.use('/api/v1/vacancies', vacancyRoutes);
 app.use('/api/v1', profileRoutes);
+app.use('/api/v1', onboardingRoutes);
+app.use('/api/v1', dashboardRoutes);
+app.use('/api/v1', matchingRoutes);
 
 // ============================================================
 // 404 Handler

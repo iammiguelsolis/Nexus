@@ -8,6 +8,8 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import UserProfilePage from './pages/UserProfilePage';
+import OnboardingPage from './pages/OnboardingPage';
+import MatchingPage from './pages/MatchingPage';
 import SessionsPage from './pages/SessionsPage';
 import OKRPage from './pages/OKRPage';
 import VacanciesPage from './pages/VacanciesPage';
@@ -36,21 +38,18 @@ const PublicRoute = ({ children }: { children: ReactNode }) => {
 
 const AppRoutes = () => (
   <Routes>
-    {/* Public routes */}
     <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
     <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-
-    {/* Vacancies — public but with layout if authenticated */}
     <Route path="/vacancies" element={<Layout><VacanciesPage /></Layout>} />
 
-    {/* Protected routes */}
     <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
     <Route path="/profile/:userId" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
+    <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+    <Route path="/matching" element={<ProtectedRoute><MatchingPage /></ProtectedRoute>} />
     <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
     <Route path="/sessions/:sesionId/okrs" element={<ProtectedRoute><OKRPage /></ProtectedRoute>} />
 
-    {/* Default redirect */}
     <Route path="/" element={<Navigate to="/dashboard" replace />} />
     <Route path="*" element={<Navigate to="/dashboard" replace />} />
   </Routes>

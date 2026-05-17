@@ -184,23 +184,135 @@
 
 ## 🚀 Onboarding
 
-| ID | Caso de Uso | Estado |
-|----|-------------|--------|
-| UC-07 | Completar evaluación diagnóstica | ⏳ Pendiente |
-| UC-08 | Generar ruta de aprendizaje (IA) | ⏳ Pendiente |
+### ✅ UC-07 — Completar evaluación diagnóstica
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Padawan responde un test inicial que alimenta al motor para generar su Learning Path. |
+| **Actores** | 🧑‍🎓 Padawan · 🤖 Sistema / IA |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/OnboardingPage.tsx` | Test paso a paso con barra de progreso |
+| Backend | `backend/src/controllers/onboarding.controller.ts` | `getDiagnostic()`, `submitDiagnostic()` |
+| Backend | `backend/src/routes/onboarding.routes.ts` | `GET/POST /api/v1/onboarding/diagnostic` |
+| DB | `backend/src/db/migrations/002_onboarding.sql` | Tabla `evaluacion_diagnostica` |
+
+**Flujo:**
+1. Padawan abre la sección "Onboarding" desde la barra lateral
+2. Responde 8 preguntas de opción múltiple navegando con botones
+3. Al enviar → `POST /api/v1/onboarding/diagnostic`
+4. Backend calcula nivel (Principiante/Intermedio/Avanzado) y áreas fuertes/débiles
+5. Resultado se guarda en `evaluacion_diagnostica`
+
+---
+
+### ✅ UC-08 — Generar ruta de aprendizaje (IA)
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El sistema analiza el perfil y crea un Learning Path personalizado con metas y sprints. |
+| **Actores** | 🤖 Sistema / IA |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/OnboardingPage.tsx` | Vista de ruta con metas y sprints |
+| Backend | `backend/src/controllers/onboarding.controller.ts` | `generateLearningPath()`, `getLearningPath()` |
+| Backend | `backend/src/routes/onboarding.routes.ts` | `GET/POST /api/v1/onboarding/learning-path` |
+| DB | `backend/src/db/migrations/002_onboarding.sql` | Tabla `learning_path` |
+
+**Flujo:**
+1. Tras completar evaluación, Padawan hace clic en "Generar mi Learning Path"
+2. Backend lee evaluación → selecciona plantilla según nivel y objetivo
+3. Genera 3 metas + 4 sprints con tareas concretas
+4. Guarda en `learning_path` → muestra resultado con tarjetas
+
+---
 
 ## 📊 Dashboard
 
-| ID | Caso de Uso | Estado |
-|----|-------------|--------|
-| UC-09 | Ver dashboard de progreso | ⏳ Pendiente |
+### ✅ UC-09 — Ver dashboard de progreso
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Padawan visualiza su score de empleabilidad, OKRs activos y próximas sesiones. |
+| **Actores** | 🧑‍🎓 Padawan |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/DashboardPage.tsx` | Vista con stats, OKRs, sesiones, onboarding |
+| Backend | `backend/src/controllers/dashboard.controller.ts` | `getDashboard()` — consulta múltiples tablas |
+| Backend | `backend/src/routes/dashboard.routes.ts` | `GET /api/v1/dashboard` |
+
+**Flujo:**
+1. Padawan entra al dashboard
+2. Backend consulta: score, OKRs activos, próximas sesiones, stats, estado de onboarding
+3. Frontend muestra: 4 tarjetas de stats, lista de OKRs con barras de progreso, próximas sesiones, banners de onboarding
+
+---
 
 ## 🔗 Matching
 
-| ID | Caso de Uso | Estado |
-|----|-------------|--------|
-| UC-10 | Recibir matching con Mentor Jedi | ⏳ Pendiente |
-| UC-11 | Aceptar o rechazar un matching | ⏳ Pendiente |
+### ✅ UC-10 — Recibir matching con Mentor Jedi
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El algoritmo empareja al Padawan con el Mentor más afín por habilidades y objetivos. |
+| **Actores** | 🧑‍🎓 Padawan · 🧙‍♂️ Mentor Jedi · 🤖 Sistema / IA |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/MatchingPage.tsx` | Vista de matchings + botón "Buscar mentor" |
+| Backend | `backend/src/controllers/matching.controller.ts` | `getMyMatchings()`, `generateMatching()` |
+| Backend | `backend/src/routes/matching.routes.ts` | `GET /api/v1/matchings/me`, `POST /api/v1/matchings/generate` |
+
+**Flujo:**
+1. Padawan sin mentor hace clic en "Buscar mentor"
+2. Backend busca mentores disponibles → calcula score de afinidad
+3. Crea matching con estado `Pendiente` → el mentor debe aceptar
+4. Ambos usuarios ven el matching en su página de Matching
+
+---
+
+### ✅ UC-11 — Aceptar o rechazar un matching
+
+| Campo | Detalle |
+|-------|--------|
+| **Descripción** | El Mentor puede revisar el perfil del Padawan propuesto y decidir si acepta la mentoría. |
+| **Actores** | 🧙‍♂️ Mentor Jedi |
+| **Estado** | ✅ Implementado |
+| **Fecha** | 2026-05-17 |
+
+**Archivos clave:**
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Frontend | `frontend/src/pages/MatchingPage.tsx` | Botones "Aceptar" / "Rechazar" para Jedi |
+| Backend | `backend/src/controllers/matching.controller.ts` | `respondMatching()` |
+| Backend | `backend/src/routes/matching.routes.ts` | `PATCH /api/v1/matchings/:matchingId/respond` |
+| DB | `backend/src/db/migrations/002_onboarding.sql` | Estado `Pendiente` agregado a matching |
+
+**Flujo:**
+1. Mentor Jedi ve matchings pendientes en su página
+2. Puede ver perfil, bio y score del Padawan
+3. Hace clic en "Aceptar" → estado cambia a `Activo`
+4. O hace clic en "Rechazar" → estado cambia a `Cancelado`
 
 ## 🎓 Mentoría
 
@@ -254,10 +366,10 @@
 | Métrica | Valor |
 |---------|-------|
 | **Total Casos de Uso** | 26 |
-| **Implementados** | 6 (UC-01, UC-02, UC-03, UC-04, UC-05, UC-06) |
+| **Implementados** | 11 (UC-01 a UC-11) |
 | **En progreso** | 0 |
-| **Pendientes** | 20 |
-| **Avance** | 23% |
+| **Pendientes** | 15 |
+| **Avance** | 42% |
 
 ---
 

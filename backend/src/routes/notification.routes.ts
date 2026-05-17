@@ -4,11 +4,9 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.use(authMiddleware);
-
-router.get('/notifications', getNotifications);
-router.get('/notifications/unread-count', getUnreadCount);
-router.patch('/notifications/:notificationId/read', markAsRead);
-router.patch('/notifications/read-all', markAllAsRead);
+router.get('/notifications', authMiddleware, getNotifications);
+router.get('/notifications/unread-count', authMiddleware, getUnreadCount);
+router.patch('/notifications/:notificationId/read', authMiddleware, markAsRead);
+router.patch('/notifications/read-all', authMiddleware, markAllAsRead);
 
 export default router;

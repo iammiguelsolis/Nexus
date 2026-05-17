@@ -6,17 +6,15 @@ import { createOKRSchema, updateOKRSchema, completeOKRSchema, feedbackOKRSchema,
 
 const router = Router();
 
-router.use(authMiddleware);
-
 // OKRs by session
-router.post('/sessions/:sesionId/okrs', validate(sesionIdParamSchema, 'params'), validate(createOKRSchema), createOKR);
-router.get('/sessions/:sesionId/okrs', validate(sesionIdParamSchema, 'params'), listOKRs);
+router.post('/sessions/:sesionId/okrs', authMiddleware, validate(sesionIdParamSchema, 'params'), validate(createOKRSchema), createOKR);
+router.get('/sessions/:sesionId/okrs', authMiddleware, validate(sesionIdParamSchema, 'params'), listOKRs);
 
 // OKR operations
-router.put('/okrs/:okrId', validate(okrIdParamSchema, 'params'), validate(updateOKRSchema), updateOKR);
-router.delete('/okrs/:okrId', validate(okrIdParamSchema, 'params'), deleteOKR);
-router.patch('/okrs/:okrId/complete', validate(okrIdParamSchema, 'params'), validate(completeOKRSchema), completeOKR);
-router.patch('/okrs/:okrId/feedback', validate(okrIdParamSchema, 'params'), validate(feedbackOKRSchema), feedbackOKR);
+router.put('/okrs/:okrId', authMiddleware, validate(okrIdParamSchema, 'params'), validate(updateOKRSchema), updateOKR);
+router.delete('/okrs/:okrId', authMiddleware, validate(okrIdParamSchema, 'params'), deleteOKR);
+router.patch('/okrs/:okrId/complete', authMiddleware, validate(okrIdParamSchema, 'params'), validate(completeOKRSchema), completeOKR);
+router.patch('/okrs/:okrId/feedback', authMiddleware, validate(okrIdParamSchema, 'params'), validate(feedbackOKRSchema), feedbackOKR);
 
 export default router;
 

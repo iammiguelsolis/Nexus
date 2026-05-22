@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes';
 import sessionRoutes from './routes/session.routes';
 import okrRoutes from './routes/okr.routes';
 import vacancyRoutes from './routes/vacancy.routes';
+import { profileRoutes } from './routes/profile.routes';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1', sessionRoutes);
 app.use('/api/v1', okrRoutes);
 app.use('/api/v1/vacancies', vacancyRoutes);
+app.use('/api/v1/profiles', profileRoutes);
 
 // ============================================================
 // 404 Handler

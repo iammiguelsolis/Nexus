@@ -5,12 +5,15 @@ import { useAuth } from '../hooks/useAuth';
 import { sessionService } from '../services/api';
 import type { Session } from '../types';
 import { LoadingSpinner, Badge } from '../components/ui';
+import { ProfileSkills } from '../components/ProfileSkills';
+import { AddSkillModal } from '../components/AddSkillModal';
 import { formatDateTime, getEstadoSesionColor } from '../utils/helpers';
 
 const DashboardPage = () => {
   const { user, refreshUser } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddSkillModal, setShowAddSkillModal] = useState(false);
 
   useEffect(() => {
     refreshUser();
@@ -21,7 +24,7 @@ const DashboardPage = () => {
   }, [refreshUser]);
 
   const score = user?.score_empleabilidad || 0;
-  const gaugeData = [{ name: 'Score', value: score }];
+  const gaugeData = [{ name: 'Score', value: score, max: 100 }];
   const isJedi = user?.rol === 'Jedi';
   const isPadawan = user?.rol === 'Padawan';
 
@@ -200,6 +203,16 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* Profile Skills (Padawan Only) */}
+      {isPadawan && user?.perfil_id && (
+        <div className="glass rounded-2xl p-6 card-hover">
+          <ProfileSkills 
+            profileId={user.perfil_id} 
+            onOpenAddSkillModal={() => setShowAddSkillModal(true)}
+          />
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link to="/sessions" className="glass rounded-2xl p-6 card-hover group flex items-center gap-4">
@@ -234,6 +247,16 @@ const DashboardPage = () => {
           </svg>
         </Link>
       </div>
+
+      {/* Global Add Skill Modal */}
+      {isPadawan && user?.perfil_id && (
+        <AddSkillModal
+          profileId={user.perfil_id}
+          isOpen={showAddSkillModal}
+          onClose={() => setShowAddSkillModal(false)}
+          onSkillAdded={() => refreshUser()}
+        />
+      )}
     </div>
   );
 };

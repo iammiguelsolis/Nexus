@@ -95,3 +95,18 @@ export const vacancyService = {
   getMyApplications: () =>
     api.get('/vacancies/my-applications'),
 };
+
+// ============ Profile Service ============
+export const profileService = {
+  getSkills: (profileId: string) =>
+    api.get(`/profiles/${profileId}/skills`),
+
+  addSkill: (profileId: string, data: { habilidad_id: string; nivel: string; fecha_adquisicion?: string }) =>
+    api.post(`/profiles/${profileId}/skills`, data),
+
+  removeSkill: (profileId: string, skillId: string) =>
+    api.delete(`/profiles/${profileId}/skills/${skillId}`),
+
+  listAvailableSkills: (categoria?: string) =>
+    api.get('/profiles/habilidades', { params: categoria ? { categoria } : {} }),
+};

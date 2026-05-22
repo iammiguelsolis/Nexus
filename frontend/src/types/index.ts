@@ -9,6 +9,7 @@ export interface User {
   rol: Rol;
   fecha_registro?: string;
   perfil_id?: string;
+  perfil_aprendiz_id?: string;
   score_empleabilidad?: number;
   resumen_bio?: string;
   url_portafolio?: string;

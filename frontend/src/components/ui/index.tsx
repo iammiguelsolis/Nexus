@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react';
+export { Dropdown } from './Dropdown';
+export { DatePicker } from './DatePicker';
+export { Portal } from './Portal';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,12 +14,17 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+    <>
+      {/* Backdrop - fixed para cobertura completa */}
+      <div 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" 
+        onClick={onClose} 
+      />
 
-      {/* Modal Content */}
-      <div className="relative glass rounded-2xl p-6 w-full max-w-lg animate-slide-up shadow-2xl shadow-nexus-900/50">
+      {/* Modal Container */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        {/* Modal Content */}
+        <div className="relative pointer-events-auto glass rounded-2xl p-6 w-full max-w-lg animate-slide-up shadow-2xl shadow-nexus-900/50">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white font-display">{title}</h3>
           <button
@@ -29,8 +37,9 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
           </button>
         </div>
         {children}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

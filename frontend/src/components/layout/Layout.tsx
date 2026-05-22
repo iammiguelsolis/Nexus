@@ -22,10 +22,10 @@ export const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-dark-900 flex">
-      {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex flex-col w-64 bg-dark-800/80 backdrop-blur-xl border-r border-dark-700/50">
+      {/* Sidebar - Desktop (Fixed al viewport height) */}
+      <aside className="hidden lg:flex lg:flex-col fixed left-0 top-0 w-64 h-screen bg-dark-800/80 backdrop-blur-xl border-r border-dark-700/50 z-30">
         {/* Logo */}
-        <div className="p-6 border-b border-dark-700/50">
+        <div className="p-6 border-b border-dark-700/50 flex-shrink-0">
           <Link to="/dashboard" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl gradient-nexus flex items-center justify-center shadow-lg shadow-nexus-700/30">
               <span className="text-white font-bold text-lg">N</span>
@@ -38,7 +38,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
         </div>
 
         {/* Nav Items */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-shrink-0 p-4 space-y-1">
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             return (
@@ -58,11 +58,14 @@ export const Layout = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
 
-        {/* User Profile */}
-        <div className="p-4 border-t border-dark-700/50">
-          <div className="glass-light rounded-xl p-3">
+        {/* Spacer - toma todo el espacio disponible */}
+        <div className="flex-1" />
+
+        {/* User Profile - Siempre al final */}
+        <div className="p-4 border-t border-dark-700/50 flex-shrink-0">
+          <div className="rounded-xl p-3 bg-dark-700/40 border border-dark-700/60 hover:bg-dark-700/60 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg gradient-nexus flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-9 h-9 rounded-lg gradient-nexus flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                 {user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
@@ -126,8 +129,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto lg:p-0 pt-16 lg:pt-0">
+      {/* Main Content - con offset para sidebar fixed */}
+      <main className="flex-1 lg:ml-64 overflow-auto pt-16 lg:pt-0">
         <div className="p-6 lg:p-8 max-w-7xl mx-auto">
           {children}
         </div>

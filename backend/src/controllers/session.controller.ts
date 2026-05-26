@@ -11,15 +11,14 @@ export const createSession = async (req: AuthRequest, res: Response, next: NextF
   const { titulo, fecha_sesion, duracion_min, notas } = req.body;
 
   try {
-    // Verify matching exists and user is part of it
+    // Verify matching exists and user is the Mentor in it (Padawans cannot create sessions)
     const matchCheck = await pool.query(
       `SELECT m.matching_id
        FROM matching m
-       JOIN perfil_aprendiz pa ON m.padawan_id = pa.perfil_id
        JOIN mentor mt ON m.mentor_id = mt.mentor_id
        WHERE m.matching_id = $1
          AND m.estado = 'Activo'
-         AND (pa.usuario_id = $2 OR mt.usuario_id = $2)`,
+         AND mt.usuario_id = $2`,
       [matchingId, req.user?.userId]
     );
 

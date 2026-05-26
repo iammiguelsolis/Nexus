@@ -1,310 +1,253 @@
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 import pool from '../db/pool';
 import { AuthRequest } from '../types';
 
-export const profileController = {
-  /**
-   * Agregar una habilidad al perfil del aprendiz
-   * POST /api/v1/profiles/:profileId/skills
-   */
-  async addSkillToProfile(req: AuthRequest, res: Response) {
-    try {
-      const { profileId } = req.params;
-      const { habilidad_id, nivel, fecha_adquisicion } = req.body;
-      const userId = req.user!.userId;
+/**
+ * GET /api/v1/profile/me
+ * UC-04 / UC-05: Obtener mi perfil completo con habilidades
+ */
+export const getMyProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) { res.status(401).json({ error: 'No autenticado', code: 'AUTH_REQUIRED' }); return; }
 
-      // 1. Verificar que el usuario es un Padawan
-      const userResult = await pool.query(
-        'SELECT usuario_id, rol FROM usuario WHERE usuario_id = $1',
-        [userId]
-      );
+    const userResult = await pool.query(
+      `SELECT u.usuario_id, u.nombres, u.apellidos, u.email, u.rol, u.fecha_registro,
+              pa.perfil_id, pa.resumen_bio, pa.score_empleabilidad, pa.url_portafolio,
+              m.mentor_id, m.especialidades, m.anios_experiencia, m.calificacion_promedio, m.bio_profesional
+       FROM usuario u
+       LEFT JOIN perfil_aprendiz pa ON u.usuario_id = pa.usuario_id
+       LEFT JOIN mentor m ON u.usuario_id = m.usuario_id
+       WHERE u.usuario_id = $1 AND u.activo = true`,
+      [req.user.userId]
+    );
 
-      if (userResult.rows.length === 0) {
-        return res.status(404).json({
-          error: 'Usuario no encontrado',
-          code: 'USER_NOT_FOUND',
-          statusCode: 404,
-        });
-      }
-
-      const user = userResult.rows[0];
-      if (user.rol !== 'Padawan') {
-        return res.status(403).json({
-          error: 'Solo los Padawans pueden agregar habilidades',
-          code: 'FORBIDDEN_ROLE',
-          statusCode: 403,
-        });
-      }
-
-      // 2. Verificar que el perfil pertenece al usuario
-      const profileResult = await pool.query(
-        'SELECT perfil_id, usuario_id FROM perfil_aprendiz WHERE perfil_id = $1',
-        [profileId]
-      );
-
-      if (profileResult.rows.length === 0) {
-        return res.status(404).json({
-          error: 'Perfil no encontrado',
-          code: 'PROFILE_NOT_FOUND',
-          statusCode: 404,
-        });
-      }
-
-      const profile = profileResult.rows[0];
-      if (profile.usuario_id !== userId) {
-        return res.status(403).json({
-          error: 'No tienes permiso para modificar este perfil',
-          code: 'FORBIDDEN_PROFILE',
-          statusCode: 403,
-        });
-      }
-
-      // 3. Verificar que la habilidad existe
-      const skillResult = await pool.query(
-        'SELECT habilidad_id, nombre, categoria FROM habilidad WHERE habilidad_id = $1',
-        [habilidad_id]
-      );
-
-      if (skillResult.rows.length === 0) {
-        return res.status(404).json({
-          error: 'Habilidad no encontrada',
-          code: 'SKILL_NOT_FOUND',
-          statusCode: 404,
-        });
-      }
-
-      const skill = skillResult.rows[0];
-
-      // 4. Verificar que no exista un registro duplicado
-      const duplicateResult = await pool.query(
-        'SELECT ph_id FROM perfil_habilidad WHERE perfil_id = $1 AND habilidad_id = $2',
-        [profileId, habilidad_id]
-      );
-
-      if (duplicateResult.rows.length > 0) {
-        return res.status(409).json({
-          error: `Ya tienes registrada la habilidad "${skill.nombre}"`,
-          code: 'SKILL_ALREADY_EXISTS',
-          statusCode: 409,
-        });
-      }
-
-      // 5. Insertar la habilidad en el perfil
-      const insertResult = await pool.query(
-        `INSERT INTO perfil_habilidad (perfil_id, habilidad_id, nivel, fecha_adquisicion, validado_por)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING ph_id, perfil_id, habilidad_id, nivel, fecha_adquisicion, validado_por`,
-        [profileId, habilidad_id, nivel, fecha_adquisicion || null, null]
-      );
-
-      const nuevaHabilidad = insertResult.rows[0];
-
-      // 6. Recalcular el score_empleabilidad del perfil
-      const scoreResult = await pool.query(
-        `SELECT 
-           COUNT(CASE WHEN nivel = 'Basico' THEN 1 END) * 5 +
-           COUNT(CASE WHEN nivel = 'Intermedio' THEN 1 END) * 10 +
-           COUNT(CASE WHEN nivel = 'Avanzado' THEN 1 END) * 15 AS total_score
-         FROM perfil_habilidad
-         WHERE perfil_id = $1`,
-        [profileId]
-      );
-
-      let nuevoScore = scoreResult.rows[0]?.total_score || 0;
-      nuevoScore = Math.min(100, nuevoScore); // Cap a 100
-
-      // 7. Actualizar el score en el perfil
-      await pool.query(
-        'UPDATE perfil_aprendiz SET score_empleabilidad = $1 WHERE perfil_id = $2',
-        [nuevoScore, profileId]
-      );
-
-      // 8. Log de auditoría
-      console.log(`[PROFILE] User ${userId} agregó la habilidad "${skill.nombre}" (${nivel}) a su perfil. Score actualizado a ${nuevoScore}%`);
-
-      return res.status(201).json({
-        message: 'Habilidad agregada exitosamente',
-        data: {
-          ...nuevaHabilidad,
-          nombre_habilidad: skill.nombre,
-          categoria_habilidad: skill.categoria,
-        },
-        score_actualizado: nuevoScore,
-      });
-    } catch (error) {
-      console.error('[PROFILE] Error al agregar habilidad:', error);
-      return res.status(500).json({
-        error: 'Error al registrar la habilidad',
-        code: 'INTERNAL_ERROR',
-        statusCode: 500,
-      });
+    if (userResult.rows.length === 0) {
+      res.status(404).json({ error: 'Usuario no encontrado', code: 'USER_NOT_FOUND' }); return;
     }
-  },
 
-  /**
-   * Obtener todas las habilidades del perfil del aprendiz
-   * GET /api/v1/profiles/:profileId/skills
-   */
-  async getProfileSkills(req: AuthRequest, res: Response) {
-    try {
-      const { profileId } = req.params;
+    const profile = userResult.rows[0];
 
-      const result = await pool.query(
-        `SELECT 
-           ph.ph_id,
-           ph.perfil_id,
-           ph.habilidad_id,
-           h.nombre,
-           h.categoria,
-           h.descripcion,
-           ph.nivel,
-           ph.fecha_adquisicion,
-           ph.validado_por
+    // Obtener habilidades si es Padawan
+    let habilidades: unknown[] = [];
+    if (profile.perfil_id) {
+      const skillsResult = await pool.query(
+        `SELECT ph.ph_id, ph.nivel, ph.fecha_adquisicion,
+                h.habilidad_id, h.nombre, h.categoria, h.descripcion
          FROM perfil_habilidad ph
          JOIN habilidad h ON ph.habilidad_id = h.habilidad_id
          WHERE ph.perfil_id = $1
-         ORDER BY h.nombre`,
-        [profileId]
+         ORDER BY h.categoria, h.nombre`,
+        [profile.perfil_id]
       );
-
-      return res.status(200).json({
-        data: result.rows,
-        total: result.rows.length,
-      });
-    } catch (error) {
-      console.error('[PROFILE] Error al obtener habilidades:', error);
-      return res.status(500).json({
-        error: 'Error al obtener las habilidades',
-        code: 'INTERNAL_ERROR',
-        statusCode: 500,
-      });
+      habilidades = skillsResult.rows;
     }
-  },
 
-  /**
-   * Eliminar una habilidad del perfil
-   * DELETE /api/v1/profiles/:profileId/skills/:skillId
-   */
-  async removeSkillFromProfile(req: AuthRequest, res: Response) {
+    res.json({ success: true, data: { ...profile, habilidades } });
+  } catch (err) { next(err); }
+};
+
+/**
+ * PUT /api/v1/profile/me
+ * UC-05: Actualizar perfil profesional (Padawan o Jedi)
+ */
+export const updateMyProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) { res.status(401).json({ error: 'No autenticado', code: 'AUTH_REQUIRED' }); return; }
+
+    const { nombres, apellidos, resumen_bio, url_portafolio, especialidades, anios_experiencia, bio_profesional } = req.body;
+    const client = await pool.connect();
+
     try {
-      const { profileId, skillId } = req.params;
-      const userId = req.user!.userId;
+      await client.query('BEGIN');
 
-      // 1. Verificar que el perfil pertenece al usuario
-      const profileResult = await pool.query(
-        'SELECT perfil_id, usuario_id FROM perfil_aprendiz WHERE perfil_id = $1',
-        [profileId]
+      // Actualizar datos del usuario si se enviaron
+      if (nombres || apellidos) {
+        const sets: string[] = [];
+        const vals: unknown[] = [];
+        let idx = 1;
+        if (nombres)   { sets.push(`nombres = $${idx++}`);   vals.push(nombres); }
+        if (apellidos) { sets.push(`apellidos = $${idx++}`); vals.push(apellidos); }
+        vals.push(req.user.userId);
+        await client.query(`UPDATE usuario SET ${sets.join(', ')} WHERE usuario_id = $${idx}`, vals);
+      }
+
+      // Actualizar perfil_aprendiz si es Padawan
+      if (req.user.rol === 'Padawan') {
+        const paFields: string[] = [];
+        const paVals: unknown[] = [];
+        let pi = 1;
+        if (resumen_bio !== undefined)   { paFields.push(`resumen_bio = $${pi++}`);   paVals.push(resumen_bio); }
+        if (url_portafolio !== undefined) { paFields.push(`url_portafolio = $${pi++}`); paVals.push(url_portafolio); }
+        if (paFields.length > 0) {
+          paFields.push(`fecha_actualizacion = NOW()`);
+          paVals.push(req.user.userId);
+          await client.query(`UPDATE perfil_aprendiz SET ${paFields.join(', ')} WHERE usuario_id = $${pi}`, paVals);
+        }
+      }
+
+      // Actualizar mentor si es Jedi
+      if (req.user.rol === 'Jedi') {
+        const mFields: string[] = [];
+        const mVals: unknown[] = [];
+        let mi = 1;
+        if (especialidades !== undefined)    { mFields.push(`especialidades = $${mi++}`);    mVals.push(especialidades); }
+        if (anios_experiencia !== undefined)  { mFields.push(`anios_experiencia = $${mi++}`); mVals.push(anios_experiencia); }
+        if (bio_profesional !== undefined)    { mFields.push(`bio_profesional = $${mi++}`);   mVals.push(bio_profesional); }
+        if (mFields.length > 0) {
+          mVals.push(req.user.userId);
+          await client.query(`UPDATE mentor SET ${mFields.join(', ')} WHERE usuario_id = $${mi}`, mVals);
+        }
+      }
+
+      await client.query('COMMIT');
+
+      // Devolver perfil actualizado
+      const updated = await pool.query(
+        `SELECT u.usuario_id, u.nombres, u.apellidos, u.email, u.rol,
+                pa.resumen_bio, pa.score_empleabilidad, pa.url_portafolio,
+                m.especialidades, m.anios_experiencia, m.bio_profesional
+         FROM usuario u
+         LEFT JOIN perfil_aprendiz pa ON u.usuario_id = pa.usuario_id
+         LEFT JOIN mentor m ON u.usuario_id = m.usuario_id
+         WHERE u.usuario_id = $1`,
+        [req.user.userId]
       );
 
-      if (profileResult.rows.length === 0) {
-        return res.status(404).json({
-          error: 'Perfil no encontrado',
-          code: 'PROFILE_NOT_FOUND',
-          statusCode: 404,
-        });
-      }
+      console.log(`[PROFILE] Updated profile for: ${req.user.email}`);
+      res.json({ success: true, data: updated.rows[0] });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) { next(err); }
+};
 
-      const profile = profileResult.rows[0];
-      if (profile.usuario_id !== userId) {
-        return res.status(403).json({
-          error: 'No tienes permiso para modificar este perfil',
-          code: 'FORBIDDEN_PROFILE',
-          statusCode: 403,
-        });
-      }
+/**
+ * GET /api/v1/profile/skills
+ * UC-04: Listar catálogo de habilidades disponibles
+ */
+export const listSkills = async (_req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const result = await pool.query(
+      'SELECT habilidad_id, nombre, categoria, descripcion FROM habilidad ORDER BY categoria, nombre'
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (err) { next(err); }
+};
 
-      // 2. Obtener información de la habilidad antes de eliminarla
-      const skillResult = await pool.query(
-        `SELECT h.nombre FROM perfil_habilidad ph
+/**
+ * POST /api/v1/profile/skills
+ * UC-04: Agregar habilidad al perfil del Padawan
+ */
+export const addSkill = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) { res.status(401).json({ error: 'No autenticado', code: 'AUTH_REQUIRED' }); return; }
+    if (req.user.rol !== 'Padawan') {
+      res.status(403).json({ error: 'Solo Padawans pueden agregar habilidades a su perfil', code: 'FORBIDDEN' }); return;
+    }
+
+    const { habilidad_id, nivel } = req.body;
+
+    // Obtener perfil_id
+    const perfilResult = await pool.query(
+      'SELECT perfil_id FROM perfil_aprendiz WHERE usuario_id = $1', [req.user.userId]
+    );
+    if (perfilResult.rows.length === 0) {
+      res.status(404).json({ error: 'Perfil no encontrado', code: 'PROFILE_NOT_FOUND' }); return;
+    }
+    const perfil_id = perfilResult.rows[0].perfil_id;
+
+    // Verificar que no exista ya
+    const existing = await pool.query(
+      'SELECT ph_id FROM perfil_habilidad WHERE perfil_id = $1 AND habilidad_id = $2',
+      [perfil_id, habilidad_id]
+    );
+    if (existing.rows.length > 0) {
+      // Actualizar nivel
+      await pool.query(
+        'UPDATE perfil_habilidad SET nivel = $1 WHERE perfil_id = $2 AND habilidad_id = $3',
+        [nivel, perfil_id, habilidad_id]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO perfil_habilidad (perfil_id, habilidad_id, nivel, fecha_adquisicion)
+         VALUES ($1, $2, $3, CURRENT_DATE)`,
+        [perfil_id, habilidad_id, nivel]
+      );
+    }
+
+    console.log(`[PROFILE] Skill added/updated for user: ${req.user.email}`);
+    res.status(201).json({ success: true, message: 'Habilidad registrada' });
+  } catch (err) { next(err); }
+};
+
+/**
+ * DELETE /api/v1/profile/skills/:habilidadId
+ * UC-04: Quitar habilidad del perfil
+ */
+export const removeSkill = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) { res.status(401).json({ error: 'No autenticado', code: 'AUTH_REQUIRED' }); return; }
+
+    const perfilResult = await pool.query(
+      'SELECT perfil_id FROM perfil_aprendiz WHERE usuario_id = $1', [req.user.userId]
+    );
+    if (perfilResult.rows.length === 0) {
+      res.status(404).json({ error: 'Perfil no encontrado', code: 'PROFILE_NOT_FOUND' }); return;
+    }
+
+    await pool.query(
+      'DELETE FROM perfil_habilidad WHERE perfil_id = $1 AND habilidad_id = $2',
+      [perfilResult.rows[0].perfil_id, req.params.habilidadId]
+    );
+
+    res.json({ success: true, message: 'Habilidad eliminada' });
+  } catch (err) { next(err); }
+};
+
+/**
+ * GET /api/v1/profile/user/:userId
+ * UC-06: Ver perfil público de otro usuario
+ */
+export const getUserProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    const userResult = await pool.query(
+      `SELECT u.usuario_id, u.nombres, u.apellidos, u.rol, u.fecha_registro,
+              pa.resumen_bio, pa.score_empleabilidad, pa.url_portafolio,
+              m.especialidades, m.anios_experiencia, m.calificacion_promedio, m.bio_profesional
+       FROM usuario u
+       LEFT JOIN perfil_aprendiz pa ON u.usuario_id = pa.usuario_id
+       LEFT JOIN mentor m ON u.usuario_id = m.usuario_id
+       WHERE u.usuario_id = $1 AND u.activo = true`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      res.status(404).json({ error: 'Usuario no encontrado', code: 'USER_NOT_FOUND' }); return;
+    }
+
+    const profile = userResult.rows[0];
+
+    // Obtener habilidades si es Padawan
+    let habilidades: unknown[] = [];
+    if (profile.rol === 'Padawan') {
+      const skillsResult = await pool.query(
+        `SELECT h.nombre, h.categoria, ph.nivel
+         FROM perfil_habilidad ph
          JOIN habilidad h ON ph.habilidad_id = h.habilidad_id
-         WHERE ph.ph_id = $1 AND ph.perfil_id = $2`,
-        [skillId, profileId]
+         JOIN perfil_aprendiz pa ON ph.perfil_id = pa.perfil_id
+         WHERE pa.usuario_id = $1
+         ORDER BY h.categoria, h.nombre`,
+        [userId]
       );
-
-      if (skillResult.rows.length === 0) {
-        return res.status(404).json({
-          error: 'Habilidad no encontrada en el perfil',
-          code: 'SKILL_NOT_FOUND',
-          statusCode: 404,
-        });
-      }
-
-      const skillName = skillResult.rows[0].nombre;
-
-      // 3. Eliminar la habilidad
-      await pool.query(
-        'DELETE FROM perfil_habilidad WHERE ph_id = $1 AND perfil_id = $2',
-        [skillId, profileId]
-      );
-
-      // 4. Recalcular el score_empleabilidad
-      const scoreResult = await pool.query(
-        `SELECT 
-           COUNT(CASE WHEN nivel = 'Basico' THEN 1 END) * 5 +
-           COUNT(CASE WHEN nivel = 'Intermedio' THEN 1 END) * 10 +
-           COUNT(CASE WHEN nivel = 'Avanzado' THEN 1 END) * 15 AS total_score
-         FROM perfil_habilidad
-         WHERE perfil_id = $1`,
-        [profileId]
-      );
-
-      let nuevoScore = scoreResult.rows[0]?.total_score || 0;
-      nuevoScore = Math.min(100, nuevoScore);
-
-      // 5. Actualizar el score
-      await pool.query(
-        'UPDATE perfil_aprendiz SET score_empleabilidad = $1 WHERE perfil_id = $2',
-        [nuevoScore, profileId]
-      );
-
-      // 6. Log de auditoría
-      console.log(`[PROFILE] User ${userId} removió la habilidad "${skillName}" de su perfil. Score actualizado a ${nuevoScore}%`);
-
-      return res.status(200).json({
-        message: 'Habilidad removida exitosamente',
-        score_actualizado: nuevoScore,
-      });
-    } catch (error) {
-      console.error('[PROFILE] Error al remover habilidad:', error);
-      return res.status(500).json({
-        error: 'Error al remover la habilidad',
-        code: 'INTERNAL_ERROR',
-        statusCode: 500,
-      });
+      habilidades = skillsResult.rows;
     }
-  },
 
-  /**
-   * Obtener todas las habilidades disponibles
-   * GET /api/v1/habilidades
-   */
-  async listSkills(req: AuthRequest, res: Response) {
-    try {
-      const { categoria } = req.query;
-
-      let query = 'SELECT * FROM habilidad';
-      const params = [];
-
-      if (categoria) {
-        query += ' WHERE categoria = $1';
-        params.push(categoria);
-      }
-
-      query += ' ORDER BY nombre';
-
-      const result = await pool.query(query, params);
-
-      return res.status(200).json({
-        data: result.rows,
-        total: result.rows.length,
-      });
-    } catch (error) {
-      console.error('[PROFILE] Error al obtener habilidades:', error);
-      return res.status(500).json({
-        error: 'Error al obtener las habilidades',
-        code: 'INTERNAL_ERROR',
-        statusCode: 500,
-      });
-    }
-  },
+    // No exponer email en perfil público
+    res.json({ success: true, data: { ...profile, habilidades } });
+  } catch (err) { next(err); }
 };

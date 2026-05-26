@@ -1,0 +1,316 @@
+
+> nexus-backend@1.0.0 test
+> jest --forceExit --detectOpenHandles --runInBand
+
+  console.log
+    DATABASE_URL: postgresql://nexus_user:nexus_local_pass@db:5432/nexus_db
+
+      at Object.<anonymous> (src/db/pool.ts:5:9)
+
+  console.log
+    [DB] New client connected to PostgreSQL
+
+      at BoundPool.<anonymous> (src/db/pool.ts:23:11)
+
+  console.log
+    [VACANCY] Created: Frontend Developer Test
+
+      at createVacancy (src/controllers/vacancy.controller.ts:64:13)
+
+[0mPOST /api/v1/vacancies [32m201[0m 21.762 ms - 361[0m
+[0mPOST /api/v1/vacancies [33m403[0m 3.529 ms - 128[0m
+[0mGET /api/v1/vacancies [33m401[0m 0.157 ms - 68[0m
+[0mGET /api/v1/vacancies?modalidad=Remoto [33m401[0m 0.195 ms - 68[0m
+  console.log
+    [VACANCY] User e4c35421-0ef8-42cd-a96b-53eed8545732 applied to "Frontend Developer Test"
+
+      at applyToVacancy (src/controllers/vacancy.controller.ts:140:13)
+
+[0mPOST /api/v1/vacancies/6a2abc21-331d-4f36-b391-b4167c0e2bff/apply [32m201[0m 10.041 ms - 297[0m
+[0mPOST /api/v1/vacancies/6a2abc21-331d-4f36-b391-b4167c0e2bff/apply [33m409[0m 5.558 ms - 65[0m
+[0mPUT /api/v1/vacancies/6a2abc21-331d-4f36-b391-b4167c0e2bff [32m200[0m 6.345 ms - 363[0m
+[0mPUT /api/v1/vacancies/6a2abc21-331d-4f36-b391-b4167c0e2bff [32m200[0m 7.050 ms - 364[0m
+[0mPUT /api/v1/vacancies/6a2abc21-331d-4f36-b391-b4167c0e2bff [32m200[0m 6.056 ms - 363[0m
+FAIL tests/vacancies.test.ts
+  UC-21: POST /api/v1/vacancies (publicar vacante)
+    ✓ crea una vacante como Admin (51 ms)
+    ✓ retorna 403 si Padawan intenta crear (16 ms)
+  UC-22: GET /api/v1/vacancies (buscar vacantes)
+    ✕ lista vacantes activas (9 ms)
+    ✕ filtra por modalidad (9 ms)
+  UC-23: POST /api/v1/vacancies/:id/apply (postularse)
+    ✓ permite al Padawan postularse (16 ms)
+    ✓ retorna 409 si ya está postulado (14 ms)
+  UC-24: PUT /api/v1/vacancies/:id (gestionar)
+    ✓ actualiza vacante como Admin (12 ms)
+    ✓ desactiva vacante (16 ms)
+    ✓ reactiva vacante (12 ms)
+
+  ● UC-22: GET /api/v1/vacancies (buscar vacantes) › lista vacantes activas
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      93 |     const res = await request(app).get('/api/v1/vacancies');
+      94 |
+    > 95 |     expect(res.status).toBe(200);
+         |                        ^
+      96 |     expect(res.body.success).toBe(true);
+      97 |     expect(Array.isArray(res.body.data)).toBe(true);
+      98 |   });
+
+      at Object.<anonymous> (tests/vacancies.test.ts:95:24)
+
+  ● UC-22: GET /api/v1/vacancies (buscar vacantes) › filtra por modalidad
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      101 |     const res = await request(app).get('/api/v1/vacancies?modalidad=Remoto');
+      102 |
+    > 103 |     expect(res.status).toBe(200);
+          |                        ^
+      104 |     res.body.data.forEach((v: { modalidad: string }) => {
+      105 |       expect(v.modalidad).toBe('Remoto');
+      106 |     });
+
+      at Object.<anonymous> (tests/vacancies.test.ts:103:24)
+
+  console.log
+    DATABASE_URL: postgresql://nexus_user:nexus_local_pass@db:5432/nexus_db
+
+      at Object.<anonymous> (src/db/pool.ts:5:9)
+
+  console.log
+    [DB] New client connected to PostgreSQL
+
+      at BoundPool.<anonymous> (src/db/pool.ts:23:11)
+
+  console.log
+    [AUTH] New user registered: carlos@authtest.com (Padawan)
+
+      at register (src/controllers/auth.controller.ts:61:13)
+
+[0mPOST /api/v1/auth/register [32m201[0m 249.493 ms - 481[0m
+[0mPOST /api/v1/auth/register [33m409[0m 2.321 ms - 65[0m
+  console.error
+    [Validation Error] on POST /api/v1/auth/register: [
+      { campo: 'nombres', mensaje: 'Required' },
+      { campo: 'apellidos', mensaje: 'Required' },
+      { campo: 'email', mensaje: 'Email inválido' },
+      {
+        campo: 'contrasena',
+        mensaje: 'La contraseña debe tener al menos 8 caracteres'
+      },
+      { campo: 'rol', mensaje: 'Rol debe ser Padawan o Jedi' }
+    ]
+
+      21 |           mensaje: e.message,
+      22 |         }));
+    > 23 |         console.error(`[Validation Error] on ${req.method} ${req.originalUrl}:`, details);
+         |                 ^
+      24 |         res.status(400).json({
+      25 |           error: 'Error de validación',
+      26 |           code: 'VALIDATION_ERROR',
+
+      at src/middleware/validate.middleware.ts:23:17
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at next (node_modules/express/lib/router/route.js:149:13)
+      at Route.dispatch (node_modules/express/lib/router/route.js:119:3)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at node_modules/express/lib/router/index.js:284:15
+      at Function.process_params (node_modules/express/lib/router/index.js:346:12)
+      at next (node_modules/express/lib/router/index.js:280:10)
+      at Function.handle (node_modules/express/lib/router/index.js:175:3)
+      at router (node_modules/express/lib/router/index.js:47:12)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at trim_prefix (node_modules/express/lib/router/index.js:328:13)
+      at node_modules/express/lib/router/index.js:286:9
+      at Function.process_params (node_modules/express/lib/router/index.js:346:12)
+      at next (node_modules/express/lib/router/index.js:280:10)
+      at urlencodedParser (node_modules/body-parser/lib/types/urlencoded.js:82:7)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at trim_prefix (node_modules/express/lib/router/index.js:328:13)
+      at node_modules/express/lib/router/index.js:286:9
+      at Function.process_params (node_modules/express/lib/router/index.js:346:12)
+      at next (node_modules/express/lib/router/index.js:280:10)
+      at node_modules/body-parser/lib/read.js:137:5
+      at invokeCallback (node_modules/raw-body/index.js:238:16)
+      at done (node_modules/raw-body/index.js:227:7)
+      at IncomingMessage.onEnd (node_modules/raw-body/index.js:287:7)
+
+[0mPOST /api/v1/auth/register [33m400[0m 6.804 ms - 339[0m
+  console.log
+    [AUTH] User logged in: carlos@authtest.com
+
+      at login (src/controllers/auth.controller.ts:119:13)
+
+[0mPOST /api/v1/auth/login [32m200[0m 228.748 ms - 437[0m
+[0mPOST /api/v1/auth/login [33m401[0m 222.811 ms - 64[0m
+  console.log
+    [AUTH] User logged in: carlos@authtest.com
+
+      at login (src/controllers/auth.controller.ts:119:13)
+
+[0mPOST /api/v1/auth/login [32m200[0m 227.363 ms - 437[0m
+[0mGET /api/v1/auth/me [32m200[0m 4.072 ms - 445[0m
+[0mGET /api/v1/auth/me [33m401[0m 0.188 ms - 68[0m
+PASS tests/auth.test.ts
+  POST /api/v1/auth/register
+    ✓ registra un nuevo Padawan correctamente (258 ms)
+    ✓ retorna 409 cuando el email ya existe (7 ms)
+    ✓ retorna 400 con datos inválidos (15 ms)
+  POST /api/v1/auth/login
+    ✓ retorna JWT con credenciales válidas (237 ms)
+    ✓ retorna 401 con contraseña incorrecta (229 ms)
+  GET /api/v1/auth/me
+    ✓ retorna datos del usuario autenticado (241 ms)
+    ✓ retorna 401 sin token (7 ms)
+
+  console.log
+    DATABASE_URL: postgresql://nexus_user:nexus_local_pass@db:5432/nexus_db
+
+      at Object.<anonymous> (src/db/pool.ts:5:9)
+
+  console.log
+    [DB] New client connected to PostgreSQL
+
+      at BoundPool.<anonymous> (src/db/pool.ts:23:11)
+
+  console.log
+    [ASYNC] Notificar mentor del padawan 26772761-8028-4cb5-b2fa-14c1b7047270 — OKR c8eab2d7-4575-451b-a86a-59b9375d3342 completado. Nota: Completed all tasks
+
+      at Immediate._onImmediate (src/controllers/okr.controller.ts:210:15)
+
+[0mPATCH /api/v1/okrs/c8eab2d7-4575-451b-a86a-59b9375d3342/complete [32m200[0m 12.981 ms - 325[0m
+[0mPATCH /api/v1/okrs/2895ce71-773f-4576-8af7-88b272023303/complete [33m401[0m 1.042 ms - 68[0m
+[0mPATCH /api/v1/okrs/ba02d6fe-168b-48a7-bedd-ebf0d5c6f193/complete [33m403[0m 3.886 ms - 65[0m
+[0mPATCH /api/v1/okrs/99fe5784-5831-4ffe-ad00-2d3734de9125/complete [33m409[0m 4.664 ms - 173[0m
+[0mPATCH /api/v1/okrs/4dd8a6a8-ac14-43cb-8274-bfa4e0d247ec/complete [33m422[0m 3.752 ms - 117[0m
+  console.log
+    [ASYNC] Notificar mentor del padawan 26772761-8028-4cb5-b2fa-14c1b7047270 — OKR 5c8061cd-ddbf-4736-9e54-2b00cbe64909 completado. Nota: Done for score test
+
+      at Immediate._onImmediate (src/controllers/okr.controller.ts:210:15)
+
+[0mPATCH /api/v1/okrs/5c8061cd-ddbf-4736-9e54-2b00cbe64909/complete [32m200[0m 8.374 ms - 330[0m
+PASS tests/okr.test.ts
+  PATCH /api/v1/okrs/:id/complete
+    ✓ retorna 200 y actualiza el OKR cuando todos los datos son válidos (20 ms)
+    ✓ retorna 401 cuando no se envía JWT (7 ms)
+    ✓ retorna 403 cuando el OKR pertenece a otro usuario (RN-01) (11 ms)
+    ✓ retorna 409 cuando el OKR está en estado Pendiente y no EnProgreso (RN-02) (11 ms)
+    ✓ retorna 422 cuando valor_actual < valor_meta (RN-03) (10 ms)
+    ✓ hace ROLLBACK si falla el INSERT en okr_historial (RN-06) (5 ms)
+    ✓ actualiza el score_empleabilidad del perfil_aprendiz tras el COMMIT (RN-05) (18 ms)
+
+  console.log
+    DATABASE_URL: postgresql://nexus_user:nexus_local_pass@db:5432/nexus_db
+
+      at Object.<anonymous> (src/db/pool.ts:5:9)
+
+  console.log
+    [DB] New client connected to PostgreSQL
+
+      at BoundPool.<anonymous> (src/db/pool.ts:23:11)
+
+  console.log
+    [SESSION] Created session "Sesión de prueba" for matching ccd88062-6adc-4e40-b063-bf63c20a5269
+
+      at createSession (src/controllers/session.controller.ts:38:13)
+
+[0mPOST /api/v1/matchings/ccd88062-6adc-4e40-b063-bf63c20a5269/sessions [32m201[0m 10.536 ms - 274[0m
+[0mPOST /api/v1/matchings/ccd88062-6adc-4e40-b063-bf63c20a5269/sessions [33m401[0m 0.911 ms - 68[0m
+  console.log
+    [SESSION] Updated session 05353aa6-37e2-4904-8b5f-4fd44fe02d27
+
+      at updateSession (src/controllers/session.controller.ts:107:13)
+
+[0mPUT /api/v1/sessions/05353aa6-37e2-4904-8b5f-4fd44fe02d27 [32m200[0m 5.110 ms - 319[0m
+  console.log
+    [SESSION] Created session "Para cancelar" for matching ccd88062-6adc-4e40-b063-bf63c20a5269
+
+      at createSession (src/controllers/session.controller.ts:38:13)
+
+[0mPOST /api/v1/matchings/ccd88062-6adc-4e40-b063-bf63c20a5269/sessions [32m201[0m 5.720 ms - 270[0m
+  console.log
+    [SESSION] Cancelled session c6be21d5-651b-4db3-89b1-58e45541bd82
+
+      at deleteSession (src/controllers/session.controller.ts:132:13)
+
+[0mDELETE /api/v1/sessions/c6be21d5-651b-4db3-89b1-58e45541bd82 [32m200[0m 4.918 ms - 269[0m
+[0mGET /api/v1/sessions/my-sessions [32m200[0m 5.498 ms - 907[0m
+PASS tests/sessions.test.ts
+  UC-12: POST /api/v1/matchings/:matchingId/sessions
+    ✓ crea una sesión correctamente (19 ms)
+    ✓ retorna 401 sin autenticación (6 ms)
+  UC-13: PUT /api/v1/sessions/:sesionId (completar)
+    ✓ marca sesión como Realizada con notas (14 ms)
+  UC-14: DELETE /api/v1/sessions/:sesionId (cancelar)
+    ✓ cancela una sesión programada (21 ms)
+  UC-15: GET /api/v1/sessions/my-sessions
+    ✓ retorna historial de sesiones del usuario (11 ms)
+
+  console.log
+    DATABASE_URL: postgresql://nexus_user:nexus_local_pass@db:5432/nexus_db
+
+      at Object.<anonymous> (src/db/pool.ts:5:9)
+
+  console.log
+    [DB] New client connected to PostgreSQL
+
+      at BoundPool.<anonymous> (src/db/pool.ts:23:11)
+
+[0mGET /api/v1/notifications [32m200[0m 6.381 ms - 940[0m
+[0mGET /api/v1/notifications [33m401[0m 0.144 ms - 68[0m
+[0mGET /api/v1/notifications/unread-count [32m200[0m 4.790 ms - 36[0m
+[0mGET /api/v1/notifications [32m200[0m 4.829 ms - 940[0m
+[0mPATCH /api/v1/notifications/c696cc33-d0fc-468a-8b42-8b8879b2a615/read [32m200[0m 6.980 ms - 320[0m
+[0mPATCH /api/v1/notifications/read-all [32m200[0m 5.413 ms - 75[0m
+[0mGET /api/v1/notifications/unread-count [32m200[0m 5.010 ms - 36[0m
+PASS tests/notifications.test.ts
+  UC-26: GET /api/v1/notifications
+    ✓ lista notificaciones del usuario (13 ms)
+    ✓ retorna 401 sin token (5 ms)
+  UC-26: GET /api/v1/notifications/unread-count
+    ✓ retorna conteo de no leídas (10 ms)
+  UC-26: PATCH /api/v1/notifications/:id/read
+    ✓ marca una notificación como leída (21 ms)
+  UC-26: PATCH /api/v1/notifications/read-all
+    ✓ marca todas como leídas (19 ms)
+
+  console.log
+    DATABASE_URL: postgresql://nexus_user:nexus_local_pass@db:5432/nexus_db
+
+      at Object.<anonymous> (src/db/pool.ts:5:9)
+
+  console.log
+    [DB] New client connected to PostgreSQL
+
+      at BoundPool.<anonymous> (src/db/pool.ts:23:11)
+
+  console.log
+    [IA] Riesgo de abandono para pad@iatest.com: 30 (medio)
+
+      at detectarRiesgoAbandono (src/controllers/ia.controller.ts:125:13)
+
+[0mGET /api/v1/ia/riesgo-abandono [32m200[0m 29.683 ms - 239[0m
+[0mGET /api/v1/ia/riesgo-abandono [33m401[0m 0.198 ms - 68[0m
+[0mGET /api/v1/ia/riesgo-abandono/all [32m200[0m 6.279 ms - 1016[0m
+[0mGET /api/v1/ia/riesgo-abandono/all [33m403[0m 2.301 ms - 135[0m
+PASS tests/ia.test.ts
+  UC-25: GET /api/v1/ia/riesgo-abandono
+    ✓ retorna score de riesgo para Padawan autenticado (41 ms)
+    ✓ retorna 401 sin autenticación (7 ms)
+  UC-25: GET /api/v1/ia/riesgo-abandono/all
+    ✓ permite al Jedi ver todos los riesgos (12 ms)
+    ✓ retorna 403 si Padawan intenta ver todos (13 ms)
+
+Test Suites: 1 failed, 5 passed, 6 total
+Tests:       2 failed, 35 passed, 37 total
+Snapshots:   0 total
+Time:        4.345 s, estimated 5 s
+Ran all test suites.

@@ -2,8 +2,9 @@ import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-const isLocalDB = process.env.DATABASE_URL?.includes('localhost');
+console.log('DATABASE_URL:', process.env.DATABASE_URL);
+const isLocalDB = process.env.DATABASE_URL?.includes('localhost')
+  || process.env.DATABASE_URL?.includes('db:');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

@@ -72,7 +72,10 @@ export const okrService = {
   delete: (okrId: string) => api.delete(`/okrs/${okrId}`),
 
   complete: (okrId: string, data: { valor_actual: number; nota_cierre: string }) =>
-    api.patch(`/okrs/${okrId}/complete`, data),
+    api.post(`/okrs/${okrId}/complete`, data),
+
+  feedback: (okrId: string, data: { accion: 'aprobar' | 'revisar'; comentario?: string }) =>
+    api.post(`/okrs/${okrId}/feedback`, data),
 };
 
 // ============ Vacancies Service ============
@@ -98,15 +101,56 @@ export const vacancyService = {
 
 // ============ Profile Service ============
 export const profileService = {
-  getSkills: (profileId: string) =>
-    api.get(`/profiles/${profileId}/skills`),
+  getMyProfile: () => api.get('/profile/me'),
 
-  addSkill: (profileId: string, data: { habilidad_id: string; nivel: string; fecha_adquisicion?: string }) =>
-    api.post(`/profiles/${profileId}/skills`, data),
+  updateMyProfile: (data: Record<string, unknown>) =>
+    api.put('/profile/me', data),
 
-  removeSkill: (profileId: string, skillId: string) =>
-    api.delete(`/profiles/${profileId}/skills/${skillId}`),
+  listSkills: () => api.get('/profile/skills'),
 
-  listAvailableSkills: (categoria?: string) =>
-    api.get('/profiles/habilidades', { params: categoria ? { categoria } : {} }),
+  addSkill: (data: { habilidad_id: string; nivel: string }) =>
+    api.post('/profile/skills', data),
+
+  removeSkill: (habilidadId: string) =>
+    api.delete(`/profile/skills/${habilidadId}`),
+
+  getUserProfile: (userId: string) =>
+    api.get(`/profile/user/${userId}`),
+};
+
+// ============ IA Service ============
+export const iaService = {
+  getRiesgoAbandono: () => api.get('/ia/riesgo-abandono'),
+  listarRiesgos: () => api.get('/ia/riesgo-abandono/all'),
+};
+
+// ============ Notification Service ============
+export const notificationService = {
+  list: () => api.get('/notifications'),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (notificationId: string) => api.patch(`/notifications/${notificationId}/read`),
+  markAllAsRead: () => api.patch('/notifications/read-all'),
+};
+
+// ============ Classroom Service ============
+export const classroomService = {
+  getFeed: (matchingId: string) => api.get(`/classroom/${matchingId}/feed`),
+  createPost: (matchingId: string, data: { tipo: string; titulo?: string; contenido: string; url_enlace?: string }) =>
+    api.post(`/classroom/${matchingId}/posts`, data),
+  deletePost: (postId: string) => api.delete(`/classroom/posts/${postId}`),
+  togglePin: (postId: string) => api.patch(`/classroom/posts/${postId}/pin`),
+  addComment: (postId: string, contenido: string) =>
+    api.post(`/classroom/posts/${postId}/comments`, { contenido }),
+  deleteComment: (commentId: string) => api.delete(`/classroom/comments/${commentId}`),
+  addResource: (postId: string, data: { nombre: string; url: string; tipo?: string }) =>
+    api.post(`/classroom/posts/${postId}/resources`, data),
+  getPeople: (matchingId: string) => api.get(`/classroom/${matchingId}/people`),
+};
+
+// ============ Chat Service ============
+export const chatService = {
+  getMessages: (matchingId: string) => api.get(`/chat/${matchingId}/messages`),
+  sendMessage: (matchingId: string, contenido: string) =>
+    api.post(`/chat/${matchingId}/messages`, { contenido }),
+  getUnreadCount: (matchingId: string) => api.get(`/chat/${matchingId}/unread`),
 };

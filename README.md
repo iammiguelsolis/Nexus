@@ -40,34 +40,17 @@ cd nexus
 docker-compose up --build
 
 # 3. ¡Listo! La app está corriendo:
-#    Frontend → http://localhost:5173
+#    Frontend → http://localhost:5174
 #    Backend  → http://localhost:3001
 #    Postgres → localhost:5432
 
 # 4. Registrar un usuario de prueba (Padawan)
 curl -X POST http://localhost:3001/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{
-    "nombres":"Carlos",
-    "apellidos":"García",
-    "email":"carlos@test.com",
-    "contrasena":"Test1234!",
-    "rol":"Padawan"
-  }'
+  -d '{"nombres":"Carlos","apellidos":"García","email":"carlos@test.com","contrasena":"Test1234!","rol":"Padawan"}'
 
-# 5. Registrar usuario Jedi (Mentor)
-curl -X POST http://localhost:3001/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombres":"José",
-    "apellidos":"López",
-    "email":"jose@test.com",
-    "contrasena":"Test1234!",
-    "rol":"Jedi"
-  }'
-
-# 6. Abrir el frontend y hacer login
-open http://localhost:5173
+# 5. Abrir el frontend y hacer login
+open http://localhost:5174
 ```
 
 ---

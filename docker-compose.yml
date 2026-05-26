@@ -1,13 +1,43 @@
 services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: nexus_user
+      POSTGRES_PASSWORD: nexus_local_pass
+      POSTGRES_DB: nexus_db
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
+    command: >
+      postgres
+      -c password_encryption=md5
+      -c log_connections=on
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql
+      - ./backend/src/db/migrations/002_onboarding.sql:/docker-entrypoint-initdb.d/002_onboarding.sql
+      - ./backend/src/db/migrations/003_notifications.sql:/docker-entrypoint-initdb.d/003_notifications.sql
+      - ./backend/src/db/migrations/004_classroom.sql:/docker-entrypoint-initdb.d/004_classroom.sql
+      - ./backend/src/db/seeds/test_data.sql:/docker-entrypoint-initdb.d/010_test_data.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus_user -d nexus_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgresql://nexus_user:nexus_local_pass@db:5432/nexus_db
+      JWT_SECRET: nexus_local_dev_secret_key_2026
       PORT: 3001
       NODE_ENV: development
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -15,7 +45,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "5173:5173"
+      - "5174:5174"
     environment:
       VITE_API_URL: http://localhost:3001
     depends_on:
@@ -23,3 +53,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+
+volumes:
+  postgres_data:

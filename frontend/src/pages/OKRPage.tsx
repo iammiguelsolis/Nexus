@@ -1,312 +1,292 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { okrService } from '../services/api';
-import type { OKR } from '../types';
-import { LoadingSpinner, Badge, ProgressBar, EmptyState, Modal } from '../components/ui';
-import { getEstadoOKRColor, formatDate, getProgressPercentage } from '../utils/helpers';
-import type { AxiosError } from 'axios';
+import { LoadingSpinner, Modal, EmptyState, ProgressBar } from '../components/ui';
+
+interface OKR {
+  okr_id: string; sesion_id: string; descripcion: string; indicador: string | null;
+  valor_meta: number; valor_actual: number;
+  estado: 'Pendiente' | 'EnProgreso' | 'Completado' | 'Cancelado';
+  fecha_limite: string | null; fecha_actualizacion: string; notas?: string | null;
+}
+
+const ESTADO_MAP: Record<string, { bg: string; color: string; label: string; icon: string }> = {
+  Pendiente:  { bg: 'var(--color-warning-light,#fff3cd)', color: 'var(--color-warning-dark,#856404)', label: 'Sin entregar', icon: '📋' },
+  EnProgreso: { bg: 'var(--color-primary-100)', color: 'var(--color-primary-700)', label: 'Entregado', icon: '📤' },
+  Completado: { bg: 'var(--color-success-light)', color: 'var(--color-success-dark)', label: 'Calificado', icon: '✅' },
+  Cancelado:  { bg: 'var(--color-danger-light)', color: 'var(--color-danger-dark)', label: 'Cancelado', icon: '❌' },
+};
 
 const OKRPage = () => {
   const { sesionId } = useParams<{ sesionId: string }>();
+  const { user } = useAuth();
   const [okrs, setOkrs] = useState<OKR[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
-  const [selectedOkr, setSelectedOkr] = useState<OKR | null>(null);
-  const [creating, setCreating] = useState(false);
-  const [completing, setCompleting] = useState(false);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const isJedi = user?.rol === 'Jedi';
+  const isPadawan = user?.rol === 'Padawan';
 
-  const [createForm, setCreateForm] = useState({
-    descripcion: '', indicador: '', valor_meta: 1, fecha_limite: '',
-  });
-  const [completeForm, setCompleteForm] = useState({
-    valor_actual: 0, nota_cierre: '',
-  });
+  // Create
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({ descripcion: '', indicador: '', valor_meta: 100, fecha_limite: '' });
+  const [creating, setCreating] = useState(false);
+
+  // Submit (student)
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [submitOkr, setSubmitOkr] = useState<OKR | null>(null);
+  const [submitText, setSubmitText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  // Grade (mentor)
+  const [showGrade, setShowGrade] = useState(false);
+  const [gradeOkr, setGradeOkr] = useState<OKR | null>(null);
+  const [gradeScore, setGradeScore] = useState(0);
+  const [gradeNote, setGradeNote] = useState('');
+  const [grading, setGrading] = useState(false);
 
   const loadOkrs = () => {
     if (!sesionId) return;
-    okrService.listBySession(sesionId)
-      .then((res) => setOkrs(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    okrService.listBySession(sesionId).then(r => setOkrs(r.data.data)).catch(() => {}).finally(() => setLoading(false));
   };
-
   useEffect(() => { loadOkrs(); }, [sesionId]);
 
   const handleCreate = async () => {
-    if (!createForm.descripcion || !sesionId) return;
+    if (!sesionId || !createForm.descripcion) return;
     setCreating(true);
-    setError('');
     try {
       await okrService.create(sesionId, {
-        descripcion: createForm.descripcion,
-        indicador: createForm.indicador || undefined,
-        valor_meta: createForm.valor_meta,
-        fecha_limite: createForm.fecha_limite || undefined,
+        descripcion: createForm.descripcion, indicador: createForm.indicador || undefined,
+        valor_meta: createForm.valor_meta, fecha_limite: createForm.fecha_limite || undefined,
       });
-      setShowCreateModal(false);
-      setCreateForm({ descripcion: '', indicador: '', valor_meta: 1, fecha_limite: '' });
-      loadOkrs();
-    } catch {
-      setError('Error al crear OKR');
-    } finally {
-      setCreating(false);
-    }
+      setShowCreate(false); setCreateForm({ descripcion: '', indicador: '', valor_meta: 100, fecha_limite: '' }); loadOkrs();
+    } catch (e: any) { alert(e.response?.data?.error || 'Error'); } finally { setCreating(false); }
   };
 
-  const openCompleteModal = (okr: OKR) => {
-    setSelectedOkr(okr);
-    setCompleteForm({ valor_actual: Number(okr.valor_meta), nota_cierre: '' });
-    setError('');
-    setSuccessMsg('');
-    setShowCompleteModal(true);
-  };
-
-  const handleComplete = async () => {
-    if (!selectedOkr) return;
-    setCompleting(true);
-    setError('');
+  const handleSubmit = async () => {
+    if (!submitOkr || !submitText.trim()) return;
+    setSubmitting(true);
     try {
-      const res = await okrService.complete(selectedOkr.okr_id, completeForm);
-      const nuevoScore = res.data.okr?.nuevo_score;
-      setSuccessMsg(`¡OKR completado! ${nuevoScore ? `Tu nuevo score es: ${nuevoScore}` : ''}`);
-      setTimeout(() => {
-        setShowCompleteModal(false);
-        setSuccessMsg('');
-        loadOkrs();
-      }, 2000);
-    } catch (err) {
-      const axiosErr = err as AxiosError<{ error: string; code: string; details?: Record<string, unknown> }>;
-      const data = axiosErr.response?.data;
-      const status = axiosErr.response?.status;
-
-      if (status === 403) setError('⛔ No eres el propietario de este OKR');
-      else if (status === 409) setError(`⚠️ ${data?.error}. Estado actual: ${data?.details?.estadoActual}`);
-      else if (status === 422) setError(`📊 Tu progreso (${data?.details?.valor_actual}) no alcanza la meta (${data?.details?.valor_meta})`);
-      else setError(data?.error || 'Error al completar OKR');
-    } finally {
-      setCompleting(false);
-    }
+      await okrService.update(submitOkr.okr_id, { indicador: submitText, estado: 'EnProgreso' });
+      setShowSubmit(false); setSubmitOkr(null); setSubmitText(''); loadOkrs();
+    } catch (e: any) { alert(e.response?.data?.error || 'Error'); } finally { setSubmitting(false); }
   };
 
-  const handleChangeStatus = async (okrId: string, estado: string) => {
+  const handleGrade = async () => {
+    if (!gradeOkr || !gradeNote.trim()) return;
+    setGrading(true);
     try {
-      await okrService.update(okrId, { estado });
-      loadOkrs();
-    } catch { /* silently fail */ }
-  };
-
-  const handleDelete = async (okrId: string) => {
-    if (!confirm('¿Cancelar este OKR?')) return;
-    try {
-      await okrService.delete(okrId);
-      loadOkrs();
-    } catch { /* silently fail */ }
+      await okrService.complete(gradeOkr.okr_id, { valor_actual: gradeScore, nota_cierre: gradeNote });
+      setShowGrade(false); setGradeOkr(null); setGradeNote(''); loadOkrs();
+    } catch (e: any) { alert(e.response?.data?.error || 'Error'); } finally { setGrading(false); }
   };
 
   if (loading) return <LoadingSpinner size="lg" />;
 
+  const stats = {
+    total: okrs.length,
+    sinEntregar: okrs.filter(o => o.estado === 'Pendiente').length,
+    entregados: okrs.filter(o => o.estado === 'EnProgreso').length,
+    calificados: okrs.filter(o => o.estado === 'Completado').length,
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link to="/sessions" className="text-dark-400 hover:text-white transition-colors">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white font-display">OKRs de la Sesión</h1>
-          <p className="text-dark-400 text-sm mt-1">Objetivos y resultados clave</p>
+    <div className="animate-fade-in max-w-3xl">
+      <Link to="/sessions" className="text-xs font-medium mb-2 inline-block" style={{ color: 'var(--color-primary-500)' }}>← Volver</Link>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold font-display" style={{ color: 'var(--text-primary)' }}>
+            {isJedi ? '📝 Tareas de la Sesión' : '📝 Mis Tareas'}
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+            {isJedi ? 'Asigna tareas y califica las entregas de tu Padawan.' : 'Entrega tus tareas para que tu mentor las revise.'}
+          </p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="btn-primary flex items-center gap-2">
-          <span>+</span> Nuevo OKR
-        </button>
+        {isJedi && <button onClick={() => setShowCreate(true)} className="btn-primary text-sm">+ Nueva tarea</button>}
       </div>
 
-      {/* Stats Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {(['Pendiente', 'EnProgreso', 'Completado', 'Cancelado'] as const).map((estado) => {
-          const count = okrs.filter((o) => o.estado === estado).length;
-          return (
-            <div key={estado} className="glass-light rounded-xl p-4 text-center">
-              <span className="text-2xl font-bold text-white">{count}</span>
-              <p className="text-xs text-dark-400 mt-1">{estado}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* OKR List */}
-      {okrs.length === 0 ? (
-        <EmptyState
-          icon="🎯"
-          title="No hay OKRs"
-          description="Crea tu primer OKR para esta sesión"
-          action={
-            <button onClick={() => setShowCreateModal(true)} className="btn-primary">Crear OKR</button>
-          }
-        />
-      ) : (
-        <div className="grid gap-4">
-          {okrs.map((okr, index) => (
-            <div
-              key={okr.okr_id}
-              className="glass rounded-2xl p-6 card-hover animate-slide-up"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <Badge className={getEstadoOKRColor(okr.estado)}>{okr.estado}</Badge>
-                    {okr.fecha_limite && (
-                      <span className="text-xs text-dark-400">📅 {formatDate(okr.fecha_limite)}</span>
-                    )}
-                  </div>
-                  <p className="text-white font-medium">{okr.descripcion}</p>
-                  {okr.indicador && (
-                    <p className="text-dark-400 text-sm mt-1">📏 {okr.indicador}</p>
-                  )}
-                  <div className="mt-4">
-                    <ProgressBar
-                      value={Number(okr.valor_actual)}
-                      max={Number(okr.valor_meta)}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {okr.estado === 'Pendiente' && (
-                    <button
-                      onClick={() => handleChangeStatus(okr.okr_id, 'EnProgreso')}
-                      className="btn-secondary text-sm px-3 py-1.5"
-                    >
-                      ▶ Iniciar
-                    </button>
-                  )}
-                  {okr.estado === 'EnProgreso' && (
-                    <button
-                      onClick={() => openCompleteModal(okr)}
-                      className="btn-success text-sm px-3 py-1.5"
-                    >
-                      ✓ Completar
-                    </button>
-                  )}
-                  {okr.estado !== 'Completado' && okr.estado !== 'Cancelado' && (
-                    <button
-                      onClick={() => handleDelete(okr.okr_id)}
-                      className="text-dark-400 hover:text-danger-400 transition-colors text-sm px-3 py-1.5"
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                </div>
-              </div>
+      {/* Stats */}
+      {okrs.length > 0 && (
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {[
+            { label: 'Total', value: stats.total, icon: '📊', bg: 'var(--surface-input)' },
+            { label: 'Sin entregar', value: stats.sinEntregar, icon: '📋', bg: 'var(--color-warning-light,#fff3cd)' },
+            { label: 'Entregados', value: stats.entregados, icon: '📤', bg: 'var(--color-primary-100)' },
+            { label: 'Calificados', value: stats.calificados, icon: '✅', bg: 'var(--color-success-light)' },
+          ].map(s => (
+            <div key={s.label} className="card p-3 text-center" style={{ backgroundColor: s.bg }}>
+              <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{s.value}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.icon} {s.label}</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* Create OKR Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Nuevo OKR">
+      {/* Task List */}
+      {okrs.length === 0 ? (
+        <div className="card p-6">
+          <EmptyState icon="📝" title="Sin tareas"
+            description={isJedi ? 'Crea la primera tarea para esta sesión.' : 'Tu mentor aún no ha asignado tareas.'}
+            action={isJedi ? <button onClick={() => setShowCreate(true)} className="btn-primary text-sm">+ Nueva tarea</button> : undefined} />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {okrs.map(okr => {
+            const st = ESTADO_MAP[okr.estado] || ESTADO_MAP.Pendiente;
+            const score = okr.valor_meta > 0 ? Math.min((okr.valor_actual / okr.valor_meta) * 100, 100) : 0;
+            const isLate = okr.fecha_limite && new Date(okr.fecha_limite) < new Date() && okr.estado === 'Pendiente';
+
+            return (
+              <div key={okr.okr_id} className="card p-0 overflow-hidden" style={{ border: isLate ? '2px solid var(--color-danger)' : '1px solid var(--border-light)' }}>
+                {/* Header */}
+                <div className="p-4 pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 pr-3">
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{okr.descripcion}</p>
+                      <div className="flex items-center gap-3 mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {okr.fecha_limite && (
+                          <span style={{ color: isLate ? 'var(--color-danger)' : undefined }}>
+                            {isLate ? '⚠️' : '📅'} {new Date(okr.fecha_limite).toLocaleDateString('es-PE', { day:'numeric', month:'short' })}
+                          </span>
+                        )}
+                        <span>🎯 Puntaje máx: {okr.valor_meta}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap" style={{ backgroundColor: st.bg, color: st.color }}>
+                      {st.icon} {st.label}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Submission area */}
+                {okr.indicador && (
+                  <div className="px-4 py-3 mx-4 mb-3 rounded-xl text-xs" style={{ backgroundColor: 'var(--surface-input)', border: '1px dashed var(--border-light)' }}>
+                    <p className="font-medium mb-1" style={{ color: 'var(--text-primary)' }}>📎 Entrega del estudiante:</p>
+                    <p style={{ color: 'var(--text-secondary)' }}>{okr.indicador}</p>
+                  </div>
+                )}
+
+                {/* Grade display */}
+                {okr.estado === 'Completado' && (
+                  <div className="px-4 pb-3">
+                    <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--color-success-light)' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold" style={{ color: 'var(--color-success-dark)' }}>📊 Calificación</span>
+                        <span className="text-lg font-bold" style={{ color: 'var(--color-success-dark)' }}>{okr.valor_actual}/{okr.valor_meta}</span>
+                      </div>
+                      <ProgressBar value={okr.valor_actual} max={okr.valor_meta} showLabel={false} />
+                      {okr.notas && <p className="text-xs mt-2" style={{ color: 'var(--color-success-dark)' }}>💬 {okr.notas}</p>}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="px-4 py-2.5 flex items-center gap-2" style={{ borderTop: '1px solid var(--border-light)', backgroundColor: 'var(--surface-input)' }}>
+                  {isPadawan && okr.estado === 'Pendiente' && (
+                    <button onClick={() => { setSubmitOkr(okr); setSubmitText(okr.indicador || ''); setShowSubmit(true); }}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'var(--color-primary-500)', color: '#fff' }}>
+                      📤 Entregar tarea
+                    </button>
+                  )}
+                  {isPadawan && okr.estado === 'EnProgreso' && (
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>⏳ Esperando calificación del mentor...</span>
+                  )}
+                  {isJedi && okr.estado === 'EnProgreso' && (
+                    <button onClick={() => { setGradeOkr(okr); setGradeScore(Number(okr.valor_meta)); setGradeNote(''); setShowGrade(true); }}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'var(--color-success)', color: '#fff' }}>
+                      ✏️ Calificar
+                    </button>
+                  )}
+                  {isJedi && okr.estado === 'Pendiente' && (
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>📋 Esperando entrega del estudiante...</span>
+                  )}
+                  {isJedi && ['Pendiente', 'EnProgreso'].includes(okr.estado) && (
+                    <button onClick={async () => { await okrService.delete(okr.okr_id); loadOkrs(); }}
+                      className="text-xs font-medium ml-auto" style={{ color: 'var(--color-danger)' }}>🗑 Eliminar</button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Create Modal */}
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="📝 Asignar nueva tarea">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-dark-300 mb-1.5">Descripción</label>
-            <textarea
-              className="input-field resize-none h-24"
-              placeholder="Ej: Completar 3 pull requests con revisión aprobada"
-              value={createForm.descripcion}
-              onChange={(e) => setCreateForm({ ...createForm, descripcion: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-1.5">Indicador de medición</label>
-            <input
-              className="input-field"
-              placeholder="Ej: Pull requests merged"
-              value={createForm.indicador}
-              onChange={(e) => setCreateForm({ ...createForm, indicador: e.target.value })}
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Descripción de la tarea</label>
+            <textarea className="input-field" rows={3} placeholder="Ej: Implementar un hook personalizado para manejo de formularios..."
+              value={createForm.descripcion} onChange={e => setCreateForm({...createForm, descripcion: e.target.value})} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-dark-300 mb-1.5">Meta (valor numérico)</label>
-              <input
-                type="number" min={1} className="input-field"
-                value={createForm.valor_meta}
-                onChange={(e) => setCreateForm({ ...createForm, valor_meta: parseInt(e.target.value) || 1 })}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Puntaje máximo</label>
+              <input className="input-field" type="number" min={1} value={createForm.valor_meta}
+                onChange={e => setCreateForm({...createForm, valor_meta: Number(e.target.value)})} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark-300 mb-1.5">Fecha límite</label>
-              <input
-                type="date" className="input-field"
-                value={createForm.fecha_limite}
-                onChange={(e) => setCreateForm({ ...createForm, fecha_limite: e.target.value })}
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Fecha límite</label>
+              <input className="input-field" type="date" value={createForm.fecha_limite}
+                onChange={e => setCreateForm({...createForm, fecha_limite: e.target.value})} />
             </div>
           </div>
-          <div className="flex gap-3 pt-2">
-            <button onClick={() => setShowCreateModal(false)} className="btn-secondary flex-1">Cancelar</button>
-            <button onClick={handleCreate} disabled={creating} className="btn-primary flex-1">
-              {creating ? '...' : 'Crear OKR'}
-            </button>
-          </div>
+          <button onClick={handleCreate} disabled={creating || !createForm.descripcion} className="btn-primary w-full">
+            {creating ? 'Creando...' : '📝 Asignar tarea'}
+          </button>
         </div>
       </Modal>
 
-      {/* Complete OKR Modal */}
-      <Modal isOpen={showCompleteModal} onClose={() => setShowCompleteModal(false)} title="Completar OKR">
+      {/* Submit Modal */}
+      <Modal isOpen={showSubmit} onClose={() => setShowSubmit(false)} title="📤 Entregar tarea">
         <div className="space-y-4">
-          {successMsg ? (
-            <div className="p-6 text-center animate-fade-in">
-              <span className="text-5xl block mb-4">🎉</span>
-              <p className="text-success-400 font-semibold text-lg">{successMsg}</p>
+          {submitOkr && (
+            <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--surface-input)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{submitOkr.descripcion}</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Puntaje máx: {submitOkr.valor_meta}</p>
             </div>
-          ) : (
+          )}
+          <div>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Tu entrega (texto o enlace)</label>
+            <textarea className="input-field" rows={4} placeholder="Describe lo que hiciste, pega un enlace a tu repositorio, etc..."
+              value={submitText} onChange={e => setSubmitText(e.target.value)} />
+          </div>
+          <button onClick={handleSubmit} disabled={submitting || !submitText.trim()} className="btn-primary w-full">
+            {submitting ? 'Enviando...' : '📤 Entregar'}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Grade Modal */}
+      <Modal isOpen={showGrade} onClose={() => setShowGrade(false)} title="✏️ Calificar tarea">
+        <div className="space-y-4">
+          {gradeOkr && (
             <>
-              {error && (
-                <div className="p-3 rounded-xl bg-danger-600/10 border border-danger-500/30 text-danger-400 text-sm animate-fade-in">
-                  {error}
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--surface-input)' }}>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{gradeOkr.descripcion}</p>
+              </div>
+              {gradeOkr.indicador && (
+                <div className="p-3 rounded-xl" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px dashed var(--color-primary-200)' }}>
+                  <p className="text-xs font-medium mb-1" style={{ color: 'var(--color-primary-700)' }}>📎 Entrega del estudiante:</p>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{gradeOkr.indicador}</p>
                 </div>
               )}
-              {selectedOkr && (
-                <div className="p-3 rounded-xl bg-dark-700/40">
-                  <p className="text-white text-sm font-medium">{selectedOkr.descripcion}</p>
-                  <p className="text-dark-400 text-xs mt-1">Meta: {selectedOkr.valor_meta}</p>
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-dark-300 mb-1.5">Valor actual alcanzado</label>
-                <input
-                  type="number" className="input-field"
-                  value={completeForm.valor_actual}
-                  onChange={(e) => setCompleteForm({ ...completeForm, valor_actual: parseFloat(e.target.value) || 0 })}
-                />
-                {selectedOkr && completeForm.valor_actual < selectedOkr.valor_meta && (
-                  <p className="text-warning-400 text-xs mt-1">
-                    ⚠ El valor debe ser ≥ {selectedOkr.valor_meta} para completar
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-300 mb-1.5">Nota de cierre</label>
-                <textarea
-                  className="input-field resize-none h-24"
-                  placeholder="Describe lo que lograste..."
-                  value={completeForm.nota_cierre}
-                  onChange={(e) => setCompleteForm({ ...completeForm, nota_cierre: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button onClick={() => setShowCompleteModal(false)} className="btn-secondary flex-1">Cancelar</button>
-                <button onClick={handleComplete} disabled={completing} className="btn-success flex-1">
-                  {completing ? '...' : '✓ Completar OKR'}
-                </button>
-              </div>
             </>
           )}
+          <div>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
+              Puntaje (máx: {gradeOkr?.valor_meta})
+            </label>
+            <input className="input-field" type="number" min={0} max={gradeOkr?.valor_meta || 100}
+              value={gradeScore} onChange={e => setGradeScore(Number(e.target.value))} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Retroalimentación</label>
+            <textarea className="input-field" rows={3} placeholder="Buen trabajo, pero podrías mejorar..."
+              value={gradeNote} onChange={e => setGradeNote(e.target.value)} />
+          </div>
+          <button onClick={handleGrade} disabled={grading || !gradeNote.trim()} className="btn-primary w-full">
+            {grading ? 'Calificando...' : '✏️ Calificar'}
+          </button>
         </div>
       </Modal>
     </div>

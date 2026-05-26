@@ -2,47 +2,112 @@ name: NEXUS CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, 'nexux/**']
   pull_request:
     branches: [main]
 
 jobs:
   test-backend:
+    name: 🧪 Backend Tests
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: nexus_user
           POSTGRES_PASSWORD: nexus_pass
           POSTGRES_DB: nexus_test
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd "pg_isready -U nexus_user -d nexus_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           - 5432:5432
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install & Test Backend
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias
         working-directory: ./backend
+        run: npm ci
+
+      - name: Ejecutar migraciones
         run: |
-          npm ci
-          psql "$DATABASE_URL" -f src/db/migrations/001_init.sql
-          npm run test
+          psql "$DATABASE_URL" -f backend/src/db/migrations/001_init.sql
+          psql "$DATABASE_URL" -f backend/src/db/migrations/002_onboarding.sql
+          psql "$DATABASE_URL" -f backend/src/db/migrations/003_notifications.sql
+          psql "$DATABASE_URL" -f backend/src/db/migrations/004_classroom.sql
         env:
           DATABASE_URL: postgresql://nexus_user:nexus_pass@localhost:5432/nexus_test
-          JWT_SECRET: test_secret
+          PGPASSWORD: nexus_pass
+
+      - name: Cargar datos de prueba
+        run: |
+          psql "$DATABASE_URL" -f backend/src/db/seeds/test_data.sql
+        env:
+          DATABASE_URL: postgresql://nexus_user:nexus_pass@localhost:5432/nexus_test
+          PGPASSWORD: nexus_pass
+
+      - name: Ejecutar tests
+        working-directory: ./backend
+        run: npm run test -- --runInBand --coverage
+        env:
+          DATABASE_URL: postgresql://nexus_user:nexus_pass@localhost:5432/nexus_test
+          JWT_SECRET: test_secret_ci_2026
+          NODE_ENV: test
+
+      - name: Compilar TypeScript
+        working-directory: ./backend
+        run: npm run build
 
   test-frontend:
+    name: 🎨 Frontend Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install & Test Frontend
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Ejecutar tests
+        working-directory: ./frontend
+        run: npm run test
+
+      - name: Compilar producción
+        working-directory: ./frontend
+        run: npm run build
+
+  lint:
+    name: 📋 Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Backend typecheck
+        working-directory: ./backend
+        run: |
+          npm ci
+          npx tsc --noEmit
+
+      - name: Frontend lint
         working-directory: ./frontend
         run: |
           npm ci
-          npm run test
+          npm run lint || true

@@ -1,9 +1,96 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   🎨 NEXUS — Design Tokens (CSS Custom Properties)
+   
+   Para cambiar toda la paleta de colores, edita SOLO estas
+   variables. Todo el resto del sistema las referencia.
+   ============================================================ */
+:root {
+  /* ── Primarios (Sage / Salvia) ── */
+  --color-primary-50:  #f0f5f1;
+  --color-primary-100: #dce8de;
+  --color-primary-200: #b8d1bc;
+  --color-primary-300: #8fb896;
+  --color-primary-400: #6B9E74;
+  --color-primary-500: #4F8458;
+  --color-primary-600: #3D6B45;
+  --color-primary-700: #2F5236;
+  --color-primary-800: #233D28;
+  --color-primary-900: #1A2E1E;
+
+  /* ── Neutros cálidos ── */
+  --color-neutral-50:  #FAFAF7;
+  --color-neutral-100: #F5F3EE;
+  --color-neutral-200: #E8E5DC;
+  --color-neutral-300: #D4CFC3;
+  --color-neutral-400: #B0A99A;
+  --color-neutral-500: #8C8474;
+  --color-neutral-600: #6B6456;
+  --color-neutral-700: #4A453B;
+  --color-neutral-800: #2D2A24;
+  --color-neutral-900: #1A1814;
+
+  /* ── Acento (Terracota cálido) ── */
+  --color-accent-50:  #FEF5EE;
+  --color-accent-100: #FDE8D5;
+  --color-accent-200: #FAC9A4;
+  --color-accent-300: #E8A97A;
+  --color-accent-400: #D4895A;
+  --color-accent-500: #C07040;
+  --color-accent-600: #9E5530;
+
+  /* ── Semánticos ── */
+  --color-success-light: #E8F5E9;
+  --color-success:       #4CAF50;
+  --color-success-dark:  #2E7D32;
+
+  --color-danger-light: #FFEBEE;
+  --color-danger:       #E57373;
+  --color-danger-dark:  #C62828;
+
+  --color-warning-light: #FFF8E1;
+  --color-warning:       #FFB74D;
+  --color-warning-dark:  #E65100;
+
+  /* ── Superficies ── */
+  --surface-page:    var(--color-neutral-50);
+  --surface-card:    #FFFFFF;
+  --surface-sidebar: var(--color-neutral-900);
+  --surface-input:   var(--color-neutral-100);
+  --surface-overlay: rgba(26, 24, 20, 0.5);
+
+  /* ── Texto ── */
+  --text-primary:   var(--color-neutral-800);
+  --text-secondary: var(--color-neutral-500);
+  --text-muted:     var(--color-neutral-400);
+  --text-inverse:   var(--color-neutral-50);
+
+  /* ── Bordes ── */
+  --border-light:  var(--color-neutral-200);
+  --border-medium: var(--color-neutral-300);
+
+  /* ── Radios ── */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-full: 9999px;
+
+  /* ── Sombras ── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+  --shadow-focus: 0 0 0 3px rgba(107, 158, 116, 0.3);
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
 @layer base {
   * {
     margin: 0;
@@ -12,66 +99,136 @@
   }
 
   body {
-    @apply bg-dark-900 text-dark-100 font-sans antialiased;
+    background-color: var(--surface-page);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-dark-800;
-  }
+  /* Scrollbar sutil */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    @apply bg-nexus-700 rounded-full;
+    background: var(--color-neutral-300);
+    border-radius: var(--radius-full);
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-nexus-600;
+    background: var(--color-neutral-400);
   }
 }
 
+/* ============================================================
+   Component Classes
+   ============================================================ */
 @layer components {
-  .glass {
-    @apply bg-dark-800/60 backdrop-blur-md border border-dark-600/30;
-  }
-  .glass-light {
-    @apply bg-dark-700/40 backdrop-blur-sm border border-dark-600/20;
-  }
-  .gradient-nexus {
-    @apply bg-gradient-to-r from-nexus-700 to-nexus-500;
-  }
-  .gradient-success {
-    @apply bg-gradient-to-r from-success-700 to-success-500;
-  }
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-nexus-400 to-success-400;
-  }
-  .card-hover {
-    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-nexus-700/20;
-  }
+  /* Botones */
   .btn-primary {
-    @apply px-6 py-2.5 rounded-xl font-semibold text-white gradient-nexus
-           hover:opacity-90 transition-all duration-200 shadow-lg shadow-nexus-700/30
-           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-5 py-2.5 rounded-lg font-medium text-white transition-all duration-200
+           active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: var(--color-primary-500);
+    box-shadow: var(--shadow-sm);
   }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-primary-600);
+    box-shadow: var(--shadow-md);
+  }
+
   .btn-secondary {
-    @apply px-6 py-2.5 rounded-xl font-semibold text-nexus-300 glass
-           hover:bg-dark-700/80 transition-all duration-200
-           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-5 py-2.5 rounded-lg font-medium transition-all duration-200
+           active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
+    color: var(--color-primary-700);
+    background-color: var(--color-primary-50);
+    border: 1px solid var(--color-primary-200);
   }
-  .btn-success {
-    @apply px-6 py-2.5 rounded-xl font-semibold text-white gradient-success
-           hover:opacity-90 transition-all duration-200 shadow-lg shadow-success-700/30
-           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-primary-100);
   }
+
   .btn-danger {
-    @apply px-6 py-2.5 rounded-xl font-semibold text-white bg-danger-600
-           hover:bg-danger-500 transition-all duration-200
-           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-5 py-2.5 rounded-lg font-medium text-white transition-all duration-200
+           active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: var(--color-danger);
   }
+  .btn-danger:hover:not(:disabled) {
+    background-color: var(--color-danger-dark);
+  }
+
+  .btn-ghost {
+    @apply px-5 py-2.5 rounded-lg font-medium transition-all duration-200;
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover {
+    color: var(--text-primary);
+    background-color: var(--color-neutral-100);
+  }
+
+  /* Inputs */
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl bg-dark-800 border border-dark-600/50
-           text-dark-100 placeholder-dark-400
-           focus:outline-none focus:ring-2 focus:ring-nexus-600 focus:border-transparent
-           transition-all duration-200;
+    @apply w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 outline-none;
+    background-color: var(--surface-input);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+  }
+  .input-field::placeholder {
+    color: var(--text-muted);
+  }
+  .input-field:focus {
+    border-color: var(--color-primary-400);
+    box-shadow: var(--shadow-focus);
+    background-color: var(--surface-card);
+  }
+
+  /* Cards */
+  .card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-primary {
+    background-color: var(--color-primary-50);
+    color: var(--color-primary-700);
+  }
+  .badge-success {
+    background-color: var(--color-success-light);
+    color: var(--color-success-dark);
+  }
+  .badge-danger {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-dark);
+  }
+  .badge-warning {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-dark);
   }
 }
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in     { animation: fadeIn 0.4s ease-out; }
+.animate-slide-up    { animation: slideUp 0.35s ease-out; }
+.animate-slide-right { animation: slideInRight 0.3s ease-out; }

@@ -1,28 +1,28 @@
 import { z } from 'zod';
 
 /**
- * Esquema para agregar una habilidad al perfil
+ * UC-04: Completar perfil — agregar habilidad al perfil del Padawan
  */
 export const addSkillSchema = z.object({
-  habilidad_id: z.string().uuid('habilidad_id debe ser un UUID válido'),
+  habilidad_id: z.string().uuid('ID de habilidad inválido'),
   nivel: z.enum(['Basico', 'Intermedio', 'Avanzado'], {
-    errorMap: () => ({
-      message: 'nivel debe ser uno de: Basico, Intermedio, Avanzado',
-    }),
+    message: 'Nivel debe ser Basico, Intermedio o Avanzado',
   }),
-  fecha_adquisicion: z.string().date().optional(),
 });
 
 /**
- * Esquema para validar profileId en parámetros
+ * UC-05: Actualizar perfil profesional
  */
-export const profileIdParamSchema = z.object({
-  profileId: z.string().uuid('profileId debe ser un UUID válido'),
+export const updateProfileSchema = z.object({
+  nombres: z.string().min(2).max(100).optional(),
+  apellidos: z.string().min(2).max(100).optional(),
+  resumen_bio: z.string().max(1000).optional().nullable().or(z.literal('')),
+  url_portafolio: z.union([z.string().url('URL inválida'), z.literal('')]).optional().nullable(),
+  // Campos exclusivos de Mentor
+  especialidades: z.string().max(500).optional().nullable().or(z.literal('')),
+  anios_experiencia: z.number().int().min(0).max(50).optional(),
+  bio_profesional: z.string().max(2000).optional().nullable().or(z.literal('')),
 });
 
-/**
- * Esquema para validar skillId en parámetros
- */
-export const skillIdParamSchema = z.object({
-  skillId: z.string().uuid('skillId debe ser un UUID válido'),
-});
+export type AddSkillInput = z.infer<typeof addSkillSchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

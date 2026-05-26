@@ -1,58 +1,21 @@
 import { Router } from 'express';
-import { profileController } from '../controllers/profile.controller';
-import { authMiddleware } from '../middleware/auth.middleware';
+import { getMyProfile, updateMyProfile, listSkills, addSkill, removeSkill, getUserProfile } from '../controllers/profile.controller';
 import { validate } from '../middleware/validate.middleware';
-import {
-  addSkillSchema,
-  profileIdParamSchema,
-  skillIdParamSchema,
-} from '../schemas/profile.schema';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { updateProfileSchema, addSkillSchema } from '../schemas/profile.schema';
 
-export const profileRoutes = Router();
+const router = Router();
 
-/**
- * GET /api/v1/habilidades
- * Obtener todas las habilidades disponibles (público)
- */
-profileRoutes.get(
-  '/habilidades',
-  (req, res) => profileController.listSkills(req, res)
-);
+// UC-04 / UC-05: Mi perfil
+router.get('/profile/me', authMiddleware, getMyProfile);
+router.put('/profile/me', authMiddleware, validate(updateProfileSchema), updateMyProfile);
 
-/**
- * POST /api/v1/profiles/:profileId/skills
- * Agregar una habilidad al perfil del aprendiz
- * Autenticación: JWT Bearer Token (Padawan)
- */
-profileRoutes.post(
-  '/:profileId/skills',
-  authMiddleware,
-  validate(profileIdParamSchema, 'params'),
-  validate(addSkillSchema, 'body'),
-  (req, res) => profileController.addSkillToProfile(req, res)
-);
+// UC-04: Habilidades
+router.get('/profile/skills', authMiddleware, listSkills);
+router.post('/profile/skills', authMiddleware, validate(addSkillSchema), addSkill);
+router.delete('/profile/skills/:habilidadId', authMiddleware, removeSkill);
 
-/**
- * GET /api/v1/profiles/:profileId/skills
- * Obtener todas las habilidades del perfil
- * Autenticación: JWT Bearer Token
- */
-profileRoutes.get(
-  '/:profileId/skills',
-  authMiddleware,
-  validate(profileIdParamSchema, 'params'),
-  (req, res) => profileController.getProfileSkills(req, res)
-);
+// UC-06: Ver perfil público de otro usuario
+router.get('/profile/user/:userId', authMiddleware, getUserProfile);
 
-/**
- * DELETE /api/v1/profiles/:profileId/skills/:skillId
- * Eliminar una habilidad del perfil
- * Autenticación: JWT Bearer Token (Padawan)
- */
-profileRoutes.delete(
-  '/:profileId/skills/:skillId',
-  authMiddleware,
-  validate(profileIdParamSchema, 'params'),
-  validate(skillIdParamSchema, 'params'),
-  (req, res) => profileController.removeSkillFromProfile(req, res)
-);
+export default router;

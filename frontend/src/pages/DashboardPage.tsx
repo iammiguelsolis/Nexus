@@ -16,6 +16,7 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAddSkillModal, setShowAddSkillModal] = useState(false);
 
   useEffect(() => {
     api.get('/dashboard')

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { vacancyService } from '../services/api';
 import { LoadingSpinner, Modal, EmptyState } from '../components/ui';
+import { Briefcase, Building2, Inbox, Check } from 'lucide-react';
 
 interface Vacancy {
   vacante_id: string;
@@ -106,8 +107,8 @@ const VacanciesPage = () => {
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold font-display" style={{ color: 'var(--text-primary)' }}>
-          💼 {isPadawan ? 'Oportunidades Laborales' : 'Mercado Laboral'}
+        <h1 className="text-3xl font-bold font-display flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+          <Briefcase className="w-8 h-8 text-primary-500" /> {isPadawan ? 'Oportunidades Laborales' : 'Mercado Laboral'}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
           {isPadawan 
@@ -139,22 +140,22 @@ const VacanciesPage = () => {
           {/* UC-22: Filtros */}
           <div className="flex gap-3 mb-6">
             <div className="flex-1">
-              <input className="input-field" placeholder="🔍 Buscar por título, empresa, sector..."
+              <input className="input-field" placeholder="Buscar por título, empresa, sector..."
                      value={searchText} onChange={(e) => setSearchText(e.target.value)} />
             </div>
             <select className="input-field" style={{ width: '180px' }}
                     value={filterModalidad} onChange={(e) => setFilterModalidad(e.target.value)}>
               <option value="">Todas las modalidades</option>
-              <option value="Remoto">🏠 Remoto</option>
-              <option value="Presencial">🏢 Presencial</option>
-              <option value="Hibrido">🔄 Híbrido</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Hibrido">Híbrido</option>
             </select>
           </div>
 
           {/* Vacancy Cards */}
           {filtered.length === 0 ? (
             <div className="card p-6">
-              <EmptyState icon="💼" title="Sin vacantes" description="No se encontraron vacantes con los filtros aplicados." />
+              <EmptyState icon={<Briefcase className="w-12 h-12 text-neutral-400" />} title="Sin vacantes" description="No se encontraron vacantes con los filtros aplicados." />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -167,8 +168,8 @@ const VacanciesPage = () => {
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{v.titulo}</h3>
-                        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                          🏢 {v.empresa_nombre} · {v.sector}
+                        <p className="text-xs flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                          <Building2 className="w-3.5 h-3.5" /> {v.empresa_nombre} · {v.sector}
                         </p>
                       </div>
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
@@ -192,9 +193,9 @@ const VacanciesPage = () => {
                       </div>
                       {isPadawan && (
                         hasApplied ? (
-                          <span className="text-xs font-medium px-3 py-1.5 rounded-lg"
+                          <span className="text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1"
                                 style={{ backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-dark)' }}>
-                            ✓ Postulado
+                            <Check className="w-3.5 h-3.5" /> Postulado
                           </span>
                         ) : (
                           <button onClick={() => { setApplyVacancy(v); setShowApply(true); }}
@@ -216,7 +217,7 @@ const VacanciesPage = () => {
       {tab === 'postulaciones' && (
         applications.length === 0 ? (
           <div className="card p-6">
-            <EmptyState icon="📭" title="Sin postulaciones" description="Aún no te has postulado a ninguna vacante." />
+            <EmptyState icon={<Inbox className="w-12 h-12 text-neutral-400" />} title="Sin postulaciones" description="Aún no te has postulado a ninguna vacante." />
           </div>
         ) : (
           <div className="space-y-3">
@@ -226,8 +227,8 @@ const VacanciesPage = () => {
                 <div key={a.postulacion_id} className="card p-4 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{a.vacante_titulo}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      🏢 {a.empresa_nombre} · {a.modalidad}
+                    <p className="text-xs flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                      <Building2 className="w-3.5 h-3.5" /> {a.empresa_nombre} · {a.modalidad}
                     </p>
                     <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                       {new Date(a.fecha_postulacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -250,8 +251,8 @@ const VacanciesPage = () => {
           {applyVacancy && (
             <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--surface-input)' }}>
               <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{applyVacancy.titulo}</p>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                🏢 {applyVacancy.empresa_nombre} · {applyVacancy.modalidad}
+              <p className="text-xs flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                <Building2 className="w-3.5 h-3.5" /> {applyVacancy.empresa_nombre} · {applyVacancy.modalidad}
               </p>
               <p className="text-xs mt-1" style={{ color: 'var(--color-primary-600)' }}>
                 S/ {applyVacancy.salario_min?.toLocaleString()} — {applyVacancy.salario_max?.toLocaleString()}

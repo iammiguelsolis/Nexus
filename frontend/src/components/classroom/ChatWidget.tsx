@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { chatService } from '../../services/api';
 import type { ChatMessage } from '../../types';
+import { X, MessageSquare, Hand, Send } from 'lucide-react';
 
 export default function ChatWidget({ matchingId, partnerName }: { matchingId: string; partnerName: string }) {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ export default function ChatWidget({ matchingId, partnerName }: { matchingId: st
       <button onClick={() => setOpen(!open)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-xl z-40 transition-all hover:scale-105"
         style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700))' }}>
-        <span className="text-2xl text-white">{open ? '✕' : '💬'}</span>
+        {open ? <X className="w-6 h-6 text-white" /> : <MessageSquare className="w-6 h-6 text-white" />}
         {unread > 0 && !open && (
           <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
                 style={{ backgroundColor: 'var(--color-danger)' }}>{unread}</span>
@@ -64,8 +65,8 @@ export default function ChatWidget({ matchingId, partnerName }: { matchingId: st
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ backgroundColor: 'var(--surface-main)' }}>
             {messages.length === 0 && (
-              <p className="text-xs text-center py-8" style={{ color: 'var(--text-muted)' }}>
-                Envía tu primer mensaje 👋
+              <p className="text-xs text-center py-8 flex flex-col items-center justify-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                <Hand className="w-6 h-6" /> Envía tu primer mensaje
               </p>
             )}
             {messages.map(m => {
@@ -97,7 +98,7 @@ export default function ChatWidget({ matchingId, partnerName }: { matchingId: st
                    value={text} onChange={e => setText(e.target.value)}
                    onKeyDown={e => e.key === 'Enter' && handleSend()} />
             <button onClick={handleSend} disabled={sending || !text.trim()}
-                    className="btn-primary text-xs px-3 rounded-xl">➤</button>
+                    className="btn-primary text-xs px-3 rounded-xl flex items-center justify-center"><Send className="w-3.5 h-3.5" /></button>
           </div>
         </div>
       )}

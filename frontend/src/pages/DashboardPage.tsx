@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { LoadingSpinner, ProgressBar } from '../components/ui';
 import api from '../services/api';
+import { Rocket, Bot, Star, CheckCircle2, Target, Lightbulb, TrendingUp, Calendar, Map } from 'lucide-react';
 
 interface DashboardData {
   score_empleabilidad: number;
@@ -43,7 +44,7 @@ const DashboardPage = () => {
         <Link to="/onboarding" className="card p-5 mb-6 block transition-shadow hover:shadow-md"
               style={{ borderLeft: '4px solid var(--color-primary-500)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🚀</span>
+            <Rocket className="w-8 h-8" style={{ color: 'var(--color-primary-500)' }} />
             <div>
               <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Completa tu evaluación diagnóstica</p>
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Responde un test rápido para generar tu ruta de aprendizaje personalizada.</p>
@@ -56,7 +57,7 @@ const DashboardPage = () => {
         <Link to="/onboarding" className="card p-5 mb-6 block transition-shadow hover:shadow-md"
               style={{ borderLeft: '4px solid var(--color-success)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🤖</span>
+            <Bot className="w-8 h-8" style={{ color: 'var(--color-success)' }} />
             <div>
               <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Genera tu Learning Path</p>
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Tu evaluación está lista. Haz clic para generar tu ruta personalizada.</p>
@@ -68,14 +69,14 @@ const DashboardPage = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Score', value: Number(data?.score_empleabilidad || 0).toFixed(0), icon: '⭐', desc: 'Empleabilidad' },
-          { label: 'OKRs', value: String(data?.stats.okrs_completados || 0), icon: '✅', desc: 'Completados' },
-          { label: 'Sesiones', value: String(data?.stats.sesiones_realizadas || 0), icon: '🎯', desc: 'Realizadas' },
-          { label: 'Habilidades', value: String(data?.stats.total_habilidades || 0), icon: '💡', desc: 'Registradas' },
+          { label: 'Score', value: Number(data?.score_empleabilidad || 0).toFixed(0), icon: Star, desc: 'Empleabilidad' },
+          { label: 'OKRs', value: String(data?.stats.okrs_completados || 0), icon: CheckCircle2, desc: 'Completados' },
+          { label: 'Sesiones', value: String(data?.stats.sesiones_realizadas || 0), icon: Target, desc: 'Realizadas' },
+          { label: 'Habilidades', value: String(data?.stats.total_habilidades || 0), icon: Lightbulb, desc: 'Registradas' },
         ].map((stat) => (
           <div key={stat.label} className="card p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">{stat.icon}</span>
+              <stat.icon className="w-5 h-5" style={{ color: 'var(--color-primary-500)' }} />
               <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{stat.label}</p>
             </div>
             <p className="text-2xl font-bold font-display" style={{ color: 'var(--text-primary)' }}>{stat.value}</p>
@@ -87,7 +88,9 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* OKRs activos */}
         <div className="card p-5">
-          <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>📈 OKRs Activos</h2>
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <TrendingUp className="w-5 h-5" style={{ color: 'var(--color-primary-500)' }} /> OKRs Activos
+          </h2>
           {data?.okrs_activos && data.okrs_activos.length > 0 ? (
             <div className="space-y-3">
               {data.okrs_activos.map((okr) => (
@@ -104,7 +107,9 @@ const DashboardPage = () => {
 
         {/* Próximas sesiones */}
         <div className="card p-5">
-          <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>📅 Próximas Sesiones</h2>
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Calendar className="w-5 h-5" style={{ color: 'var(--color-primary-500)' }} /> Próximas Sesiones
+          </h2>
           {data?.proximas_sesiones && data.proximas_sesiones.length > 0 ? (
             <div className="space-y-3">
               {data.proximas_sesiones.map((s) => (
@@ -135,7 +140,7 @@ const DashboardPage = () => {
       {data?.onboarding.learning_path_generado && (
         <Link to="/onboarding" className="card p-5 mt-6 block transition-shadow hover:shadow-md">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">🗺</span>
+            <Map className="w-6 h-6" style={{ color: 'var(--color-primary-500)' }} />
             <div>
               <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{data.onboarding.learning_path_titulo}</p>
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Nivel: {data.onboarding.nivel_general} · Ver ruta completa →</p>

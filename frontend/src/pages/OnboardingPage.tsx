@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { profileService } from '../services/api';
 import { LoadingSpinner } from '../components/ui';
 import api from '../services/api';
+import { Target, Trophy, Pin, CalendarDays, CheckCircle2, Bot, AlertTriangle, ArrowLeft, ArrowRight, Circle } from 'lucide-react';
 
 interface Question { id: string; text: string; options: string[]; }
 interface Evaluation { evaluacion_id: string; nivel_general: string; areas_fuertes: string; areas_mejora: string; }
@@ -78,7 +79,7 @@ const OnboardingPage = () => {
         {/* Nivel */}
         <div className="card p-5 mb-6">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🎯</span>
+            <Target className="w-8 h-8" style={{ color: 'var(--color-primary-500)' }} />
             <div>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Tu nivel detectado</p>
               <p className="text-xl font-bold" style={{ color: 'var(--color-primary-700)' }}>{evaluation.nivel_general}</p>
@@ -104,11 +105,13 @@ const OnboardingPage = () => {
 
         {/* Metas */}
         <div className="card p-5 mb-6">
-          <h3 className="text-base font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>🏆 Metas</h3>
+          <h3 className="text-base font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Trophy className="w-5 h-5" style={{ color: 'var(--color-primary-500)' }} /> Metas
+          </h3>
           <div className="space-y-2">
             {parsedMetas.map((m: { titulo: string; descripcion: string }, i: number) => (
-              <div key={i} className="flex gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--surface-input)' }}>
-                <span className="text-lg">📌</span>
+              <div key={i} className="flex gap-3 p-3 rounded-lg items-start" style={{ backgroundColor: 'var(--surface-input)' }}>
+                <Pin className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{m.titulo}</p>
                   <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{m.descripcion}</p>
@@ -120,7 +123,9 @@ const OnboardingPage = () => {
 
         {/* Sprints */}
         <div className="card p-5">
-          <h3 className="text-base font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>🗓 Sprints</h3>
+          <h3 className="text-base font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <CalendarDays className="w-5 h-5" style={{ color: 'var(--color-primary-500)' }} /> Sprints
+          </h3>
           <div className="space-y-4">
             {parsedSprints.map((s: { sprint: number; titulo: string; tareas: string[] }) => (
               <div key={s.sprint} className="p-4 rounded-lg" style={{ border: '1px solid var(--border-light)' }}>
@@ -130,10 +135,10 @@ const OnboardingPage = () => {
                   </span>
                   <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{s.titulo}</span>
                 </div>
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   {s.tareas.map((t, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <span style={{ color: 'var(--color-neutral-400)' }}>○</span> {t}
+                    <li key={j} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      <Circle className="w-2 h-2 mt-1.5 flex-shrink-0" style={{ color: 'var(--color-neutral-400)' }} /> {t}
                     </li>
                   ))}
                 </ul>
@@ -151,11 +156,11 @@ const OnboardingPage = () => {
       <div className="animate-fade-in max-w-3xl">
         <h1 className="text-2xl font-bold font-display mb-6" style={{ color: 'var(--text-primary)' }}>Evaluación Completada</h1>
         <div className="card p-6 text-center">
-          <span className="text-5xl mb-4 block">✅</span>
+          <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--color-success)' }} />
           <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Nivel: {evaluation.nivel_general}</h2>
           <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>Ahora podemos generar tu ruta de aprendizaje personalizada.</p>
           <button onClick={handleGenerate} disabled={generating} className="btn-primary flex items-center justify-center gap-2 mx-auto">
-            {generating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '🤖'}
+            {generating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Bot className="w-5 h-5" />}
             {generating ? 'Generando...' : 'Generar mi Learning Path'}
           </button>
         </div>
@@ -206,12 +211,12 @@ const OnboardingPage = () => {
       {/* Nav */}
       <div className="flex justify-between mt-4">
         <button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}
-                className="btn-ghost text-sm" style={{ opacity: step === 0 ? 0.4 : 1 }}>
-          ← Anterior
+                className="btn-ghost text-sm flex items-center gap-1" style={{ opacity: step === 0 ? 0.4 : 1 }}>
+          <ArrowLeft className="w-4 h-4" /> Anterior
         </button>
         {step < questions.length - 1 ? (
-          <button onClick={() => setStep(step + 1)} className="btn-secondary text-sm" disabled={!answers[currentQ.id]}>
-            Siguiente →
+          <button onClick={() => setStep(step + 1)} className="btn-secondary text-sm flex items-center gap-1" disabled={!answers[currentQ.id]}>
+            Siguiente <ArrowRight className="w-4 h-4" />
           </button>
         ) : (
           allAnswered ? (
@@ -221,7 +226,7 @@ const OnboardingPage = () => {
             </button>
           ) : (
             <div className="flex items-center gap-2" style={{ color: 'var(--color-warning)' }}>
-              <span className="text-xs">⚠️ Responde todas las preguntas</span>
+              <AlertTriangle className="w-4 h-4" /> <span className="text-xs">Responde todas las preguntas</span>
             </div>
           )
         )}

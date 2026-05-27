@@ -3,14 +3,15 @@ import { useAuth } from '../../hooks/useAuth';
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { notificationService } from '../../services/api';
+import { BarChart2, User, Rocket, Link as LinkIcon, Target, Briefcase, XCircle, CheckCircle2, TrendingUp, Trophy, MessageSquare, AlertTriangle, Mail, Bell, Menu } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { path: '/profile', label: 'Mi Perfil', icon: '👤' },
-  { path: '/onboarding', label: 'Onboarding', icon: '🚀' },
-  { path: '/matching', label: 'Matching', icon: '🔗' },
-  { path: '/sessions', label: 'Sesiones', icon: '🎯' },
-  { path: '/vacancies', label: 'Vacantes', icon: '💼' },
+  { path: '/dashboard', label: 'Dashboard', icon: BarChart2 },
+  { path: '/profile', label: 'Mi Perfil', icon: User },
+  { path: '/onboarding', label: 'Onboarding', icon: Rocket },
+  { path: '/matching', label: 'Matching', icon: LinkIcon },
+  { path: '/sessions', label: 'Sesiones', icon: Target },
+  { path: '/vacancies', label: 'Vacantes', icon: Briefcase },
 ];
 
 interface Notification {
@@ -72,18 +73,18 @@ export const Layout = ({ children }: { children: ReactNode }) => {
     color: active ? 'var(--color-primary-200)' : 'var(--color-neutral-400)',
   });
 
-  const TIPO_ICONS: Record<string, string> = {
-    nueva_sesion: '🎯', sesion_cancelada: '❌', sesion_realizada: '✅',
-    okr_creado: '📈', okr_completado: '🏆', okr_feedback: '💬',
-    matching_nuevo: '🔗', matching_aceptado: '✅', matching_rechazado: '❌',
-    riesgo_abandono: '⚠️', vacante_nueva: '💼', postulacion_recibida: '📩',
-    sistema: '🔔',
+  const TIPO_ICONS: Record<string, any> = {
+    nueva_sesion: Target, sesion_cancelada: XCircle, sesion_realizada: CheckCircle2,
+    okr_creado: TrendingUp, okr_completado: Trophy, okr_feedback: MessageSquare,
+    matching_nuevo: LinkIcon, matching_aceptado: CheckCircle2, matching_rechazado: XCircle,
+    riesgo_abandono: AlertTriangle, vacante_nueva: Briefcase, postulacion_recibida: Mail,
+    sistema: Bell,
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--surface-page)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--surface-page)' }}>
       {/* Sidebar Desktop */}
-      <aside className="hidden lg:flex flex-col w-60"
+      <aside className="hidden lg:flex flex-col w-60 fixed inset-y-0 left-0 z-50"
              style={{ backgroundColor: 'var(--surface-sidebar)', borderRight: '1px solid var(--color-neutral-700)' }}>
         <div className="p-5" style={{ borderBottom: '1px solid var(--color-neutral-700)' }}>
           <Link to="/dashboard" className="flex items-center gap-3">
@@ -99,15 +100,17 @@ export const Layout = ({ children }: { children: ReactNode }) => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
             <Link key={item.path} to={item.path}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200"
                   style={linkStyle(location.pathname.startsWith(item.path))}
                   id={`nav-${item.path.slice(1)}`}>
-              <span>{item.icon}</span>
+              <Icon className="w-5 h-5" />
               <span className="font-medium text-sm">{item.label}</span>
             </Link>
-          ))}
+          )})}
         </nav>
 
         <div className="p-3" style={{ borderTop: '1px solid var(--color-neutral-700)' }}>
@@ -140,14 +143,12 @@ export const Layout = ({ children }: { children: ReactNode }) => {
            style={{ backgroundColor: 'var(--surface-card)', borderBottom: '1px solid var(--border-light)' }}>
         <div className="flex items-center justify-between">
           <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <Menu className="w-6 h-6" />
           </button>
           <span className="font-display font-bold text-lg">NEXUS</span>
           <div className="flex items-center gap-2">
             <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-1">
-              <span className="text-lg">🔔</span>
+              <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[10px] flex items-center justify-center text-white font-bold"
                       style={{ backgroundColor: 'var(--color-danger)' }}>
@@ -173,14 +174,16 @@ export const Layout = ({ children }: { children: ReactNode }) => {
               <h1 className="text-lg font-bold font-display" style={{ color: 'var(--text-inverse)' }}>NEXUS</h1>
             </div>
             <nav className="p-3 space-y-1">
-              {NAV_ITEMS.map((item) => (
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                return (
                 <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all"
                       style={linkStyle(location.pathname.startsWith(item.path))}>
-                  <span>{item.icon}</span>
+                  <Icon className="w-5 h-5" />
                   <span className="font-medium text-sm">{item.label}</span>
                 </Link>
-              ))}
+              )})}
             </nav>
             <div className="absolute bottom-0 left-0 right-0 p-4" style={{ borderTop: '1px solid var(--color-neutral-700)' }}>
               <button onClick={handleLogout} className="w-full text-sm py-2" style={{ color: 'var(--color-neutral-400)' }}>
@@ -192,12 +195,12 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto pt-16 lg:pt-0 relative">
+      <main className="flex-1 overflow-auto pt-16 lg:pt-0 lg:ml-60 relative min-h-screen">
         {/* Desktop notification bell */}
         <div className="hidden lg:flex items-center justify-end p-4 pb-0">
           <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-2 rounded-lg transition-colors"
                   style={{ backgroundColor: notifOpen ? 'var(--color-primary-100)' : 'transparent' }}>
-            <span className="text-lg">🔔</span>
+            <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full text-[10px] flex items-center justify-center text-white font-bold"
                     style={{ backgroundColor: 'var(--color-danger)' }}>
@@ -222,11 +225,13 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             <div className="max-h-80 overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center">
-                  <p className="text-2xl mb-2">🔔</p>
+                  <div className="flex justify-center mb-2"><Bell className="w-8 h-8" style={{ color: 'var(--text-muted)' }} /></div>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sin notificaciones</p>
                 </div>
               ) : (
-                notifications.slice(0, 10).map((n) => (
+                notifications.slice(0, 10).map((n) => {
+                  const Icon = TIPO_ICONS[n.tipo] || Bell;
+                  return (
                   <div key={n.notificacion_id}
                        onClick={() => { if (!n.leida) handleMarkRead(n.notificacion_id); }}
                        className="flex items-start gap-3 p-3 transition-colors cursor-pointer"
@@ -234,7 +239,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                          backgroundColor: n.leida ? 'transparent' : 'var(--color-primary-50)',
                          borderBottom: '1px solid var(--border-light)',
                        }}>
-                    <span className="text-base mt-0.5">{TIPO_ICONS[n.tipo] || '🔔'}</span>
+                    <span className="mt-1"><Icon className="w-4 h-4" /></span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{n.titulo}</p>
                       {n.mensaje && (
@@ -248,7 +253,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                       <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: 'var(--color-primary-500)' }} />
                     )}
                   </div>
-                ))
+                )})
               )}
             </div>
           </div>

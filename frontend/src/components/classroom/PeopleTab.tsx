@@ -1,4 +1,5 @@
 import type { ClassroomPeople } from '../../types';
+import { Lightbulb, Calendar, Star, BarChart2, Link2 } from 'lucide-react';
 
 export default function PeopleTab({ people }: { people: ClassroomPeople | null }) {
   if (!people) return <p className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>Cargando...</p>;
@@ -37,9 +38,9 @@ export default function PeopleTab({ people }: { people: ClassroomPeople | null }
         bio={people.bio_profesional || ''}
         extra={
           <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-            {people.especialidades && <span>💡 {people.especialidades}</span>}
-            {people.anios_experiencia > 0 && <span>📅 {people.anios_experiencia} años exp.</span>}
-            {people.calificacion_promedio > 0 && <span>⭐ {Number(people.calificacion_promedio).toFixed(1)}</span>}
+            {people.especialidades && <span className="flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" /> {people.especialidades}</span>}
+            {people.anios_experiencia > 0 && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {people.anios_experiencia} años exp.</span>}
+            {people.calificacion_promedio > 0 && <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-warning" /> {Number(people.calificacion_promedio).toFixed(1)}</span>}
           </div>
         }
       />
@@ -51,10 +52,10 @@ export default function PeopleTab({ people }: { people: ClassroomPeople | null }
         bio={people.resumen_bio || ''}
         extra={
           <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-            <span>📊 Score: {Number(people.score_empleabilidad).toFixed(0)}/100</span>
+            <span className="flex items-center gap-1"><BarChart2 className="w-3.5 h-3.5" /> Score: {Number(people.score_empleabilidad).toFixed(0)}/100</span>
             {people.url_portafolio && (
-              <a href={people.url_portafolio} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary-500)' }}>
-                🔗 Portafolio
+              <a href={people.url_portafolio} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:underline" style={{ color: 'var(--color-primary-500)' }}>
+                <Link2 className="w-3.5 h-3.5" /> Portafolio
               </a>
             )}
           </div>
@@ -63,7 +64,7 @@ export default function PeopleTab({ people }: { people: ClassroomPeople | null }
 
       {/* Matching info */}
       <div className="card p-4 mt-4" style={{ backgroundColor: 'var(--surface-input)' }}>
-        <p className="text-xs font-medium mb-1" style={{ color: 'var(--text-primary)' }}>📊 Información del Matching</p>
+        <p className="text-xs font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--text-primary)' }}><BarChart2 className="w-3.5 h-3.5" /> Información del Matching</p>
         <div className="flex gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
           <span>Afinidad: {(Number(people.score_afinidad) * 100).toFixed(0)}%</span>
           <span>Desde: {new Date(people.fecha_asignacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>

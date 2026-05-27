@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { classroomService } from '../../services/api';
 import type { ClassroomPost } from '../../types';
+import { Megaphone, FileText, Link2, Pin, Trash2, Github, Video, Paperclip, MessageSquare } from 'lucide-react';
 
-const TIPO_ICONS: Record<string, string> = { anuncio: '📢', material: '📄', enlace: '🔗' };
+const TIPO_ICONS: Record<string, any> = { anuncio: <Megaphone className="w-4 h-4 inline" />, material: <FileText className="w-4 h-4 inline" />, enlace: <Link2 className="w-4 h-4 inline" /> };
 
 const timeAgo = (d: string) => {
   const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
@@ -69,7 +70,7 @@ export default function FeedTab({ matchingId, posts, reload }: { matchingId: str
             <div className="flex gap-2">
               {(['anuncio','material','enlace'] as const).map(t => (
                 <button key={t} onClick={() => setPostType(t)}
-                  className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+                  className="text-xs px-3 py-1.5 rounded-full font-medium transition-all flex items-center gap-1"
                   style={{ backgroundColor: postType === t ? 'var(--color-primary-100)' : 'var(--surface-input)',
                            color: postType === t ? 'var(--color-primary-700)' : 'var(--text-muted)' }}>
                   {TIPO_ICONS[t]} {t.charAt(0).toUpperCase()+t.slice(1)}
@@ -98,7 +99,7 @@ export default function FeedTab({ matchingId, posts, reload }: { matchingId: str
           {post.fijado && (
             <div className="px-4 py-1.5 text-xs font-medium flex items-center gap-1"
                  style={{ backgroundColor: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}>
-              📌 Publicación fijada
+              <Pin className="w-3.5 h-3.5" /> Publicación fijada
             </div>
           )}
           <div className="p-4">
@@ -123,11 +124,11 @@ export default function FeedTab({ matchingId, posts, reload }: { matchingId: str
                   <button onClick={async () => { await classroomService.togglePin(post.post_id); reload(); }}
                     className="p-1.5 rounded-lg text-xs transition-colors hover:opacity-80"
                     style={{ color: post.fijado ? 'var(--color-primary-500)' : 'var(--text-muted)' }}
-                    title={post.fijado ? 'Desfijar' : 'Fijar'}>📌</button>
+                    title={post.fijado ? 'Desfijar' : 'Fijar'}><Pin className="w-4 h-4" /></button>
                 )}
                 {(post.autor_id === user?.usuario_id || isJedi) && (
                   <button onClick={async () => { await classroomService.deletePost(post.post_id); reload(); }}
-                    className="p-1.5 rounded-lg text-xs" style={{ color: 'var(--color-danger)' }} title="Eliminar">🗑</button>
+                    className="p-1.5 rounded-lg text-xs" style={{ color: 'var(--color-danger)' }} title="Eliminar"><Trash2 className="w-4 h-4" /></button>
                 )}
               </div>
             </div>
@@ -141,7 +142,7 @@ export default function FeedTab({ matchingId, posts, reload }: { matchingId: str
               <a href={post.url_enlace} target="_blank" rel="noopener noreferrer"
                  className="mt-3 flex items-center gap-2 p-3 rounded-xl text-sm font-medium transition-all hover:opacity-80"
                  style={{ backgroundColor: 'var(--color-primary-50)', color: 'var(--color-primary-600)', border: '1px solid var(--color-primary-100)' }}>
-                🔗 {post.url_enlace.length > 50 ? post.url_enlace.slice(0,50)+'...' : post.url_enlace}
+                <Link2 className="w-4 h-4" /> {post.url_enlace.length > 50 ? post.url_enlace.slice(0,50)+'...' : post.url_enlace}
               </a>
             )}
 
@@ -152,7 +153,7 @@ export default function FeedTab({ matchingId, posts, reload }: { matchingId: str
                   <a key={r.recurso_id} href={r.url} target="_blank" rel="noopener noreferrer"
                      className="flex items-center gap-2 p-2 rounded-lg text-xs hover:opacity-80 transition-all"
                      style={{ backgroundColor: 'var(--surface-input)', color: 'var(--text-secondary)' }}>
-                    {r.tipo === 'github' ? '🐙' : r.tipo === 'video' ? '🎬' : '📎'} {r.nombre}
+                    {r.tipo === 'github' ? <Github className="w-4 h-4" /> : r.tipo === 'video' ? <Video className="w-4 h-4" /> : <Paperclip className="w-4 h-4" />} {r.nombre}
                   </a>
                 ))}
               </div>
@@ -162,8 +163,8 @@ export default function FeedTab({ matchingId, posts, reload }: { matchingId: str
           {/* Comments */}
           <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <button onClick={() => setShowComments(p => ({...p, [post.post_id]: !p[post.post_id]}))}
-              className="w-full px-4 py-2 text-xs text-left font-medium" style={{ color: 'var(--text-muted)' }}>
-              💬 {post.comentarios?.length || 0} comentarios
+              className="w-full px-4 py-2 text-xs text-left font-medium flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+              <MessageSquare className="w-3.5 h-3.5" /> {post.comentarios?.length || 0} comentarios
             </button>
             {showComments[post.post_id] && (
               <div className="px-4 pb-3 space-y-2">

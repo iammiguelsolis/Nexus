@@ -38,8 +38,8 @@ export const useProfileSkills = (profileId: string | null) => {
     if (!profileId) return;
     try {
       setLoading(true);
-      const response = await profileService.getSkills(profileId);
-      setSkills(response.data.data);
+      const response = await profileService.getMyProfile();
+      setSkills(response.data.data.habilidades || []);
       setError(null);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al cargar las habilidades');
@@ -52,7 +52,7 @@ export const useProfileSkills = (profileId: string | null) => {
   // Load available skills
   const loadAvailableSkills = async (categoria?: string) => {
     try {
-      const response = await profileService.listAvailableSkills(categoria);
+      const response = await profileService.listSkills();
       setAvailableSkills(response.data.data);
     } catch (err: any) {
       console.error('Error loading available skills:', err);
@@ -64,7 +64,10 @@ export const useProfileSkills = (profileId: string | null) => {
     if (!profileId) return;
     try {
       setLoading(true);
-      const response = await profileService.addSkill(profileId, payload);
+      const response = await profileService.addSkill({
+        habilidad_id: payload.habilidad_id,
+        nivel: payload.nivel,
+      });
       setScore(response.data.score_actualizado);
       await loadProfileSkills();
       setError(null);
@@ -83,7 +86,7 @@ export const useProfileSkills = (profileId: string | null) => {
     if (!profileId) return;
     try {
       setLoading(true);
-      const response = await profileService.removeSkill(profileId, skillId);
+      const response = await profileService.removeSkill(skillId);
       setScore(response.data.score_actualizado);
       await loadProfileSkills();
       setError(null);

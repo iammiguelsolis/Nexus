@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LoadingSpinner, EmptyState } from '../components/ui';
 import api from '../services/api';
+import { Book, School, Calendar, Star, ArrowRight } from 'lucide-react';
 
 interface MatchingAula {
   matching_id: string;
@@ -58,8 +59,8 @@ const SessionsPage = () => {
     <div className="animate-fade-in">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-display" style={{ color: 'var(--text-primary)' }}>
-          {isPadawan ? '📚 Mi Aula' : '🏫 Mis Aulas'}
+        <h1 className="text-3xl font-bold font-display flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+          {isPadawan ? <><Book className="w-8 h-8 text-primary-500" /> Mi Aula</> : <><School className="w-8 h-8 text-primary-500" /> Mis Aulas</>}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
           {isPadawan
@@ -71,7 +72,7 @@ const SessionsPage = () => {
       {matchings.length === 0 ? (
         <div className="card p-8">
           <EmptyState
-            icon="🏫"
+            icon={<School className="w-12 h-12 text-neutral-400" />}
             title="Sin aulas activas"
             description={isPadawan
               ? 'Aún no tienes un mentor asignado. Ve a Matching para buscar uno.'
@@ -125,16 +126,16 @@ const SessionsPage = () => {
                 {/* Body */}
                 <div className="p-5 pt-3">
                   <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-                    <span>📅 {new Date(m.fecha_asignacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                    <span>⭐ Afinidad: {(Number(m.score_afinidad) * 100).toFixed(0)}%</span>
+                    <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(m.fecha_asignacion).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-warning" /> Afinidad: {(Number(m.score_afinidad) * 100).toFixed(0)}%</span>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-xs font-medium px-3 py-1 rounded-full"
                           style={{ backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-dark)' }}>
                       Activo
                     </span>
-                    <span className="text-xs font-medium" style={{ color: 'var(--color-primary-500)' }}>
-                      Abrir aula →
+                    <span className="text-xs font-medium flex items-center justify-center gap-1" style={{ color: 'var(--color-primary-500)' }}>
+                      Abrir aula <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>

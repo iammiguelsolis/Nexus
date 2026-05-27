@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { profileService } from '../services/api';
 import { LoadingSpinner } from '../components/ui';
 import type { ProfileData } from '../types';
+import { User, GraduationCap, Wand2, Star, ArrowLeft } from 'lucide-react';
 
 const UserProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -23,7 +24,7 @@ const UserProfilePage = () => {
   if (error || !profile) {
     return (
       <div className="animate-fade-in text-center py-16">
-        <span className="text-5xl mb-4 block">👤</span>
+        <User className="w-16 h-16 mb-4 mx-auto text-neutral-400" />
         <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
           {error || 'Usuario no encontrado'}
         </h2>
@@ -48,8 +49,8 @@ const UserProfilePage = () => {
               {profile.nombres} {profile.apellidos}
             </h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="badge badge-primary">
-                {isPadawan ? '🎓 Padawan' : '🧙‍♂️ Mentor Jedi'}
+              <span className="badge badge-primary flex items-center gap-1">
+                {isPadawan ? <><GraduationCap className="w-3.5 h-3.5" /> Padawan</> : <><Wand2 className="w-3.5 h-3.5" /> Mentor Jedi</>}
               </span>
               {profile.fecha_registro && (
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -136,15 +137,17 @@ const UserProfilePage = () => {
             </div>
             <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--surface-input)' }}>
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Calificación</p>
-              <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                ⭐ {profile.calificacion_promedio ?? '—'}
+              <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--text-primary)' }}>
+                <Star className="w-4 h-4 text-warning" /> {profile.calificacion_promedio ?? '—'}
               </p>
             </div>
           </div>
         </div>
       )}
 
-      <Link to="/dashboard" className="btn-ghost text-sm">← Volver al dashboard</Link>
+      <Link to="/dashboard" className="btn-ghost text-sm flex items-center gap-2 w-fit mt-4">
+        <ArrowLeft className="w-4 h-4" /> Volver al dashboard
+      </Link>
     </div>
   );
 };

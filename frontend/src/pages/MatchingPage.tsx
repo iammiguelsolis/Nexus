@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { LoadingSpinner } from '../components/ui';
 import api from '../services/api';
+import { Wand2, Link2, Bot, Check, Clock, Star, ArrowRight, Calendar, RefreshCw, Users, Inbox, X } from 'lucide-react';
 
 interface Matching {
   matching_id: string;
@@ -70,8 +71,8 @@ const MatchingPage = () => {
     return (
       <div className="animate-fade-in max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold font-display mb-2" style={{ color: 'var(--text-primary)' }}>
-            🧙‍♂️ Mi Mentor Jedi
+          <h1 className="text-3xl font-bold font-display mb-2 flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+            <Wand2 className="w-8 h-8 text-primary-500" /> Mi Mentor Jedi
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Tu conexión de mentoría personalizada. El algoritmo te conecta con el mentor ideal.
@@ -80,7 +81,7 @@ const MatchingPage = () => {
 
         {!currentMatching && (
           <div className="card p-8 text-center mb-6">
-            <span className="text-6xl block mb-4">🔗</span>
+            <Link2 className="w-16 h-16 mx-auto mb-4 text-neutral-400" />
             <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
               Aún no tienes mentor asignado
             </h2>
@@ -93,7 +94,7 @@ const MatchingPage = () => {
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Buscando...
                 </>
-              ) : '🤖 Buscar mentor compatible'}
+              ) : <><Bot className="w-4 h-4" /> Buscar mentor compatible</>}
             </button>
           </div>
         )}
@@ -112,12 +113,12 @@ const MatchingPage = () => {
                 <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
                   {currentMatching.especialidades || 'Mentor Jedi certificado'}
                 </p>
-                <span className="text-xs font-medium px-3 py-1 rounded-full" 
+                <span className="text-xs font-medium px-3 py-1 rounded-full inline-flex items-center gap-1" 
                       style={{
                         backgroundColor: currentMatching.estado === 'Activo' ? 'var(--color-success-light)' : 'var(--color-warning-light)',
                         color: currentMatching.estado === 'Activo' ? 'var(--color-success-dark)' : 'var(--color-warning-dark)',
                       }}>
-                  {currentMatching.estado === 'Activo' ? '✓ Mentoría Activa' : '⏳ Pendiente'}
+                  {currentMatching.estado === 'Activo' ? <><Check className="w-3.5 h-3.5" /> Mentoría Activa</> : <><Clock className="w-3.5 h-3.5" /> Pendiente</>}
                 </span>
               </div>
             </div>
@@ -135,20 +136,20 @@ const MatchingPage = () => {
               </div>
               <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--surface-input)' }}>
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Rating</p>
-                <p className="text-xl font-bold mt-1">⭐ {currentMatching.calificacion_promedio}</p>
+                <p className="text-xl font-bold mt-1 flex items-center justify-center gap-1"><Star className="w-5 h-5 text-warning" /> {currentMatching.calificacion_promedio}</p>
               </div>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-light)', marginBottom: '1.5rem' }}></div>
 
             <div className="flex gap-2">
-              <a href={`/profile/${currentMatching.mentor_usuario_id}`} className="text-sm font-medium flex-1 py-2 px-4 rounded-lg text-center"
+              <a href={`/profile/${currentMatching.mentor_usuario_id}`} className="text-sm font-medium flex-1 py-2 px-4 rounded-lg flex items-center justify-center gap-1"
                  style={{ backgroundColor: 'var(--surface-input)', color: 'var(--color-primary-500)' }}>
-                Ver perfil →
+                Ver perfil <ArrowRight className="w-4 h-4" />
               </a>
               {currentMatching.estado === 'Activo' && (
-                <a href="/sessions" className="text-sm font-medium flex-1 py-2 px-4 rounded-lg text-white text-center btn-primary">
-                  📅 Mis Sesiones
+                <a href="/sessions" className="text-sm font-medium flex-1 py-2 px-4 rounded-lg text-white btn-primary flex items-center justify-center gap-2">
+                  <Calendar className="w-4 h-4" /> Mis Sesiones
                 </a>
               )}
             </div>
@@ -157,9 +158,9 @@ const MatchingPage = () => {
 
         {currentMatching && (
           <div className="text-center">
-            <button onClick={handleGenerate} disabled={generating} className="text-sm font-medium"
+            <button onClick={handleGenerate} disabled={generating} className="text-sm font-medium flex items-center justify-center gap-1 mx-auto"
                     style={{ color: 'var(--color-primary-500)' }}>
-              ↻ Buscar otro mentor
+              <RefreshCw className="w-4 h-4" /> Buscar otro mentor
             </button>
           </div>
         )}
@@ -174,8 +175,8 @@ const MatchingPage = () => {
   return (
     <div className="animate-fade-in max-w-3xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-display mb-2" style={{ color: 'var(--text-primary)' }}>
-          👥 Mis Padawans
+        <h1 className="text-3xl font-bold font-display mb-2 flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+          <Users className="w-8 h-8 text-primary-500" /> Mis Padawans
         </h1>
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Gestiona tus mentorias y aprendices.
@@ -184,7 +185,7 @@ const MatchingPage = () => {
 
       {matchings.length === 0 && (
         <div className="card p-8 text-center">
-          <span className="text-6xl block mb-4">📭</span>
+          <Inbox className="w-16 h-16 mx-auto mb-4 text-neutral-400" />
           <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
             Sin aprendices asignados
           </h2>
@@ -196,8 +197,8 @@ const MatchingPage = () => {
 
       {pendingMatchings.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-            ⏳ Solicitudes Pendientes ({pendingMatchings.length})
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Clock className="w-5 h-5 text-warning" /> Solicitudes Pendientes ({pendingMatchings.length})
           </h2>
           <div className="space-y-3">
             {pendingMatchings.map((m) => (
@@ -230,19 +231,19 @@ const MatchingPage = () => {
                 <div className="flex gap-2 pt-2" style={{ borderTop: '1px solid var(--border-light)' }}>
                   <button onClick={() => handleRespond(m.matching_id, 'aceptar')}
                           disabled={responding === m.matching_id}
-                          className="btn-primary text-sm flex-1">
-                    ✓ Aceptar
+                          className="btn-primary text-sm flex-1 flex items-center justify-center gap-1">
+                    <Check className="w-4 h-4" /> Aceptar
                   </button>
                   <button onClick={() => handleRespond(m.matching_id, 'rechazar')}
                           disabled={responding === m.matching_id}
-                          className="btn-ghost text-sm flex-1"
+                          className="btn-ghost text-sm flex-1 flex items-center justify-center gap-1"
                           style={{ color: 'var(--color-danger)' }}>
-                    ✕ Rechazar
+                    <X className="w-4 h-4" /> Rechazar
                   </button>
                   <a href={`/profile/${m.padawan_usuario_id}`}
-                     className="text-xs font-medium py-2 px-3 rounded-lg"
+                     className="text-xs font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1"
                      style={{ backgroundColor: 'var(--surface-input)', color: 'var(--color-primary-500)' }}>
-                    Ver →
+                    Ver <ArrowRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>
@@ -253,8 +254,8 @@ const MatchingPage = () => {
 
       {activeMatchings.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-            ✓ Mentorias Activas ({activeMatchings.length})
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Check className="w-5 h-5 text-success" /> Mentorias Activas ({activeMatchings.length})
           </h2>
           <div className="space-y-3">
             {activeMatchings.map((m) => (
@@ -289,13 +290,13 @@ const MatchingPage = () => {
                 )}
 
                 <div className="flex gap-2 pt-2" style={{ borderTop: '1px solid var(--border-light)' }}>
-                  <a href="/sessions" className="text-sm font-medium flex-1 py-2 px-3 rounded-lg text-white text-center btn-primary">
-                    📅 Crear sesión
+                  <a href="/sessions" className="text-sm font-medium flex-1 py-2 px-3 rounded-lg text-white btn-primary flex items-center justify-center gap-1">
+                    <Calendar className="w-4 h-4" /> Crear sesión
                   </a>
                   <a href={`/profile/${m.padawan_usuario_id}`}
-                     className="text-xs font-medium py-2 px-3 rounded-lg"
+                     className="text-xs font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1"
                      style={{ backgroundColor: 'var(--surface-input)', color: 'var(--color-primary-500)' }}>
-                    Ver perfil →
+                    Ver perfil <ArrowRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { sessionService } from '../../services/api';
 import { Modal } from '../ui';
 import { useState } from 'react';
 import type { Session } from '../../types';
+import { Calendar, CheckCircle2, FileEdit, Check, X, BookOpen, ArrowRight } from 'lucide-react';
 
 const ESTADO_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   Programada: { bg: 'var(--color-primary-100)', color: 'var(--color-primary-700)', label: '📅 Programada' },
@@ -54,7 +55,7 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
       {programadas.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            📅 Próximas sesiones <span className="text-xs font-normal px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-primary-100)', color: 'var(--color-primary-700)' }}>{programadas.length}</span>
+            <Calendar className="w-4 h-4 text-primary-500" /> Próximas sesiones <span className="text-xs font-normal px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-primary-100)', color: 'var(--color-primary-700)' }}>{programadas.length}</span>
           </h3>
           <div className="space-y-2">
             {programadas.map(s => {
@@ -62,7 +63,7 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
               return (
                 <div key={s.sesion_id} className="card p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: style.bg }}>📝</div>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: style.bg, color: style.color }}><FileEdit className="w-5 h-5" /></div>
                     <div>
                       <Link to={`/sessions/${s.sesion_id}/okrs`} className="text-sm font-semibold hover:underline" style={{ color: 'var(--text-primary)' }}>{s.titulo}</Link>
                       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -73,10 +74,10 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
                   <div className="flex items-center gap-2">
                     {isJedi && (
                       <button onClick={() => { setCompleteSession(s); setCompleteNotes(s.notas||''); setShowComplete(true); }}
-                        className="text-xs font-medium px-3 py-1 rounded-lg" style={{ backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-dark)' }}>✓ Completar</button>
+                        className="text-xs font-medium px-3 py-1 rounded-lg flex items-center justify-center gap-1" style={{ backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-dark)' }}><Check className="w-3.5 h-3.5" /> Completar</button>
                     )}
                     <button onClick={async () => { await sessionService.delete(s.sesion_id); reload(); }}
-                      className="text-xs" style={{ color: 'var(--color-danger)' }}>✕</button>
+                      className="p-1 rounded-lg transition-colors hover:bg-neutral-100" style={{ color: 'var(--color-danger)' }}><X className="w-4 h-4" /></button>
                   </div>
                 </div>
               );
@@ -88,12 +89,12 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
       {/* Realizadas */}
       {realizadas.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>✅ Sesiones completadas</h3>
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}><CheckCircle2 className="w-4 h-4 text-success" /> Sesiones completadas</h3>
           <div className="space-y-2">
             {realizadas.map(s => (
               <div key={s.sesion_id} className="card p-4 flex items-center justify-between" style={{ opacity: 0.85 }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: 'var(--color-success-light)' }}>✅</div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--color-success-light)', color: 'var(--color-success-dark)' }}><CheckCircle2 className="w-5 h-5" /></div>
                   <div>
                     <Link to={`/sessions/${s.sesion_id}/okrs`} className="text-sm font-medium hover:underline" style={{ color: 'var(--text-primary)' }}>{s.titulo}</Link>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -101,7 +102,7 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
                     </p>
                   </div>
                 </div>
-                <Link to={`/sessions/${s.sesion_id}/okrs`} className="text-xs font-medium" style={{ color: 'var(--color-primary-500)' }}>Ver tareas →</Link>
+                <Link to={`/sessions/${s.sesion_id}/okrs`} className="text-xs font-medium flex items-center justify-center gap-1" style={{ color: 'var(--color-primary-500)' }}>Ver tareas <ArrowRight className="w-3.5 h-3.5" /></Link>
               </div>
             ))}
           </div>
@@ -110,7 +111,7 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
 
       {sessions.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-4xl mb-3">📚</p>
+          <BookOpen className="w-12 h-12 mx-auto mb-3 text-neutral-400" />
           <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Sin sesiones aún</p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{isJedi ? 'Crea la primera sesión para tu Padawan.' : 'Tu mentor aún no ha creado sesiones.'}</p>
         </div>
@@ -125,8 +126,8 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
             <input className="input-field" type="number" min={15} value={form.duracion_min} onChange={e => setForm({...form, duracion_min: Number(e.target.value)})} />
           </div>
           <textarea className="input-field" rows={2} placeholder="Notas (opcional)" value={form.notas} onChange={e => setForm({...form, notas: e.target.value})} />
-          <button onClick={handleCreate} disabled={creating || !form.titulo || !form.fecha_sesion} className="btn-primary w-full">
-            {creating ? 'Creando...' : '📅 Programar'}
+          <button onClick={handleCreate} disabled={creating || !form.titulo || !form.fecha_sesion} className="btn-primary w-full flex items-center justify-center gap-2">
+            {creating ? 'Creando...' : <><Calendar className="w-4 h-4" /> Programar</>}
           </button>
         </div>
       </Modal>
@@ -135,7 +136,7 @@ export default function WorkTab({ matchingId, sessions, reload }: { matchingId: 
       <Modal isOpen={showComplete} onClose={() => setShowComplete(false)} title="Completar sesión">
         <div className="space-y-3">
           <textarea className="input-field" rows={3} placeholder="Notas y feedback..." value={completeNotes} onChange={e => setCompleteNotes(e.target.value)} />
-          <button onClick={handleComplete} className="btn-primary w-full">✓ Marcar como Realizada</button>
+          <button onClick={handleComplete} className="btn-primary w-full flex items-center justify-center gap-2"><Check className="w-4 h-4" /> Marcar como Realizada</button>
         </div>
       </Modal>
     </div>

@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { profileService } from '../services/api';
 import { LoadingSpinner, Modal } from '../components/ui';
 import type { Skill, ProfileData, NivelHabilidad } from '../types';
+import { Star, X } from 'lucide-react';
 
 const NIVELES: { value: NivelHabilidad; label: string }[] = [
   { value: 'Basico', label: 'Básico' },
@@ -166,8 +167,8 @@ const ProfilePage = () => {
             </div>
             {profile?.score_empleabilidad !== undefined && (
               <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)' }}>
-                <p className="text-sm font-medium" style={{ color: 'var(--color-primary-700)' }}>
-                  ⭐ Score de empleabilidad: <strong>{profile.score_empleabilidad}</strong>
+                <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--color-primary-700)' }}>
+                  <Star className="w-4 h-4 text-warning" /> Score de empleabilidad: <strong>{profile.score_empleabilidad}</strong>
                 </p>
               </div>
             )}
@@ -255,9 +256,9 @@ const ProfilePage = () => {
                       {skill.nivel}
                     </span>
                     <button onClick={() => handleRemoveSkill(skill.habilidad_id)}
-                            className="text-xs px-2 py-1 rounded transition-colors"
+                            className="text-xs p-1 rounded transition-colors"
                             style={{ color: 'var(--color-danger)' }}>
-                      ✕
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>

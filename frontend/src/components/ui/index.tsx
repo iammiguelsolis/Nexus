@@ -26,9 +26,8 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
           </button>
         </div>
         {children}
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -75,11 +74,11 @@ export const LoadingSpinner = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) =
 };
 
 /* ── EmptyState ── */
-export const EmptyState = ({ icon = '📭', title, description, action }: {
-  icon?: string; title: string; description?: string; action?: ReactNode;
+export const EmptyState = ({ icon, title, description, action }: {
+  icon?: ReactNode; title: string; description?: string; action?: ReactNode;
 }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
-    <span className="text-5xl mb-4">{icon}</span>
+    {icon && (typeof icon === 'string' ? <span className="text-5xl mb-4">{icon}</span> : <div className="mb-4">{icon}</div>)}
     <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{title}</h3>
     {description && <p className="max-w-md mb-6" style={{ color: 'var(--text-secondary)' }}>{description}</p>}
     {action}

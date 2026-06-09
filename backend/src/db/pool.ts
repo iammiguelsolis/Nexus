@@ -3,11 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 console.log('DATABASE_URL:', process.env.DATABASE_URL);
-const isLocalDB = process.env.DATABASE_URL?.includes('localhost')
-  || process.env.DATABASE_URL?.includes('db:');
+const databaseUrl = process.env.DATABASE_URL;
+const isLocalDB = !databaseUrl
+  || databaseUrl.includes('localhost')
+  || databaseUrl.includes('127.0.0.1')
+  || databaseUrl.includes('db:');
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: databaseUrl,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
